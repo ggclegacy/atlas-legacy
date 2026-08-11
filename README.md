@@ -6,10 +6,13 @@ Atlas is not a chat app. It is the intelligence layer across Neil Stutes's
 companies, projects, decisions, and knowledge — built cloud-first, phone-first,
 and designed to accumulate understanding over time.
 
-> **Current status: Milestone 0 — Foundation.**
+> **Current status: Milestone 0 — Foundation. Deployed.**
 > The repository, build pipeline, environment contract, architectural
-> boundaries, and health probe exist. There is no database, no authentication,
+> boundaries, health probe, CI, and the GitHub → CI → Vercel preview/production
+> pipeline all exist and are verified. There is no database, no authentication,
 > no AI, and no design system yet. Those land in M1–M4.
+>
+> Deployment evidence: [`docs/operations/m0-closeout.md`](docs/operations/m0-closeout.md)
 
 ---
 

@@ -9,41 +9,55 @@ Local development  →  GitHub  →  Vercel preview  →  smoke test  →  produ
 
 ---
 
-## One-time setup
+## Current setup
 
-These steps require account access and must be performed by Neil.
+Established during the M0 closeout. Recorded here so it is not re-derived.
 
-### 1. GitHub
+### GitHub
 
-```bash
-git remote add origin https://github.com/ggclegacy/atlas-legacy.git
-git push -u origin main
-```
+- Repository: `ggclegacy/atlas-legacy`, default branch `main`.
+- Local `origin` points at it over HTTPS; credentials come from the macOS
+  keychain helper (`osxkeychain`, configured system-wide).
+- **Branch protection on `main`** requires a pull request and a passing
+  **`CI / Verify`** check, with no bypass. Given that Next.js 16 does not run
+  ESLint during `next build`, this check is the _only_ thing enforcing the
+  architectural boundary rules before code reaches production. Treat it as an
+  architecture control, not CI hygiene. Do not weaken or remove it.
 
-Then in **Settings → Branches**, add a protection rule for `main`:
+### Vercel
 
-- Require a pull request before merging
-- Require status checks to pass → select **CI / Verify**
-- Do not allow bypassing the above settings
+Project `atlas-legacy` under the `ggclegacyapps-5233's projects` team.
 
-This is what makes the milestone gate real rather than optional.
+| Setting           | Value                           |
+| ----------------- | ------------------------------- |
+| Framework preset  | Next.js (auto-detected)         |
+| Root directory    | `.`                             |
+| Node.js version   | 24.x (matches `.nvmrc`)         |
+| Production branch | `main`                          |
+| Build / output    | Defaults — **no `vercel.json`** |
 
-### 2. Vercel
+The GitHub repository is connected to the project, so pushes deploy
+automatically: `main` → production, every other branch → a preview.
 
-1. **Add New → Project**, import `ggclegacy/atlas-legacy`.
-2. Framework preset: **Next.js** (auto-detected). Leave build and output
-   settings at their defaults — no `vercel.json` is needed or wanted.
-3. Node.js version: **24.x**, to match `.nvmrc` and CI.
-4. Deploy.
+### Package manager
 
-### 3. Environment variables
+**npm.** Vercel detects it from `package-lock.json`; CI uses `npm ci`. The
+master plan referenced pnpm, but enabling it via corepack requires sudo on this
+machine. This is a package-manager choice with no architectural consequence and
+can be revisited deliberately later (`corepack enable pnpm && pnpm import`).
 
-At M0 there are none to set — Atlas builds and runs with an empty environment.
-As milestones land, add each variable **per environment** (Production, Preview,
-Development) under **Settings → Environment Variables**. Never reuse a
-production key in preview.
+### Environment variables
 
-### 4. Custom domain
+None at M0 — Atlas builds and runs with an empty environment. As milestones
+land, add each variable **per environment** (Production, Preview, Development)
+under **Settings → Environment Variables**. Never reuse a production key in
+preview.
+
+Note that `vercel link` writes a local `.env.local` containing a
+`VERCEL_OIDC_TOKEN`. It is gitignored and is not part of the Atlas environment
+contract; the schema ignores unknown keys, so it does not affect validation.
+
+### Custom domain — still to do
 
 Attach before M3. Passkey credentials are bound to an origin, so changing the
 domain after registration invalidates them. Once attached, set `ATLAS_APP_URL`
