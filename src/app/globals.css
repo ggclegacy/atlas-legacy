@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+/*
+ * M0 baseline only.
+ *
+ * This is NOT the Atlas design system. M1 introduces the real token layer
+ * (black = command, gold = authority, blue = intelligence) in
+ * src/styles/tokens.css and this file becomes a thin entry point.
+ *
+ * What is here is the minimum needed so the foundation deployment does not
+ * render as an unstyled white page.
+ */
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #050506;
+    color: #f2f1ee;
+    -webkit-font-smoothing: antialiased;
+  }
+}
