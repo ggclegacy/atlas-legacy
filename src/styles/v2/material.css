@@ -1,0 +1,191 @@
+/*
+ * ATLAS V2 — material and depth primitives (VP1)
+ *
+ * Depth is made from 1px luminance differentials and true-black recession.
+ * Explicitly NOT from: backdrop-filter (measured WebKit failure in M1), large
+ * shadows, glassmorphism, or embossing.
+ */
+
+[data-atlas='v2'] {
+  background-color: var(--v-void);
+  color: var(--v-text-primary);
+  position: relative;
+}
+
+/* Grain overlay. Fixed, non-interactive, above content — it is a noise floor
+   over the whole image, which is what breaks up banding. */
+[data-atlas='v2']::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background-image: url('/atlas/grain-64.png');
+  background-repeat: repeat;
+  opacity: var(--v-grain);
+}
+
+/* ------------------------------------------------------------------ WELL --
+ * Content is CUT INTO structure, not raised onto it. The top inner edge is
+ * dark (the lip shadows it); the bottom inner edge is lit. That inversion is
+ * the entire recession effect.
+ */
+.v-well {
+  background-color: var(--v-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--v-line-recessed),
+    inset 0 -1px 0 0 var(--v-line-raised);
+}
+
+/* Phone: wells run off the edge. Radius 0 at the viewport boundary is what
+   makes it read as a cut into something larger rather than a card. */
+.v-well--bleed {
+  border-radius: 0;
+  margin-inline: calc(var(--v-module) * -4);
+  padding-inline: calc(var(--v-module) * 4);
+}
+
+@media (min-width: 768px) {
+  .v-well--bleed {
+    margin-inline: 0;
+    border-radius: var(--v-plane);
+  }
+}
+
+/* --------------------------------------------------------------- SURFACE --
+ * Raised: inverse bevel. Lit above, shadowed below.
+ */
+.v-surface {
+  background-color: var(--v-surface);
+  border-radius: var(--v-plane);
+  box-shadow:
+    inset 0 1px 0 0 var(--v-line-raised),
+    inset 0 -1px 0 0 var(--v-line-recessed);
+}
+
+.v-surface--active {
+  background-color: var(--v-active);
+}
+
+/* Transient overlays: the ONLY layer permitted a blurred shadow. */
+.v-transient {
+  background-color: var(--v-transient);
+  border-radius: var(--v-plane);
+  box-shadow:
+    inset 0 1px 0 0 var(--v-line-raised),
+    0 8px 24px -8px var(--v-shadow-transient);
+}
+
+/* ------------------------------------------------------------- HAIRLINES --
+ * Every interruption is caused by something. The label creates the gap; the
+ * gap is not decoration. Implemented as a flex row so the cause is literal.
+ */
+.v-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--v-edge-gap);
+  inline-size: 100%;
+}
+
+.v-rule::before,
+.v-rule::after {
+  content: '';
+  block-size: 1px;
+  background-color: var(--v-line-structural);
+}
+
+.v-rule::before {
+  inline-size: var(--v-inset);
+  flex: none;
+}
+
+.v-rule::after {
+  flex: 1;
+}
+
+.v-rule__label {
+  /*
+   * Must yield rather than push the rule off-screen. Production section labels
+   * are short, but a long one at 320px broke the layout in VP1 — the label is
+   * the cause of the gap, so it is the thing that has to shrink.
+   */
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--v-text-tertiary);
+}
+
+/* --------------------------------------------------------- GOLD BEHAVIOUR --
+ * Illuminated alloy without skeuomorphism: luminance varies ALONG the edge,
+ * brightest where the implied light strikes. One 1px gradient. No texture.
+ */
+.v-gold-edge {
+  position: relative;
+}
+
+.v-gold-edge::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--v-gold-structural) 16%,
+    var(--v-gold-illuminated) 50%,
+    var(--v-gold-structural) 84%,
+    transparent 100%
+  );
+}
+
+/* Specular: a short, very light highlight at the implied light position. */
+.v-gold-specular::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 38%;
+  inline-size: 24%;
+  block-size: 1px;
+  background-image: linear-gradient(90deg, transparent, var(--v-gold-specular), transparent);
+  opacity: 0.55;
+}
+
+/* Dim structural gold — the default. */
+.v-gold-hairline {
+  background-color: var(--v-gold-structural);
+}
+
+/* Authority: gold and still. Used when Atlas needs a human decision. */
+.v-authority {
+  border: 1px solid var(--v-gold-illuminated);
+  border-radius: var(--v-fillet);
+}
+
+/* ----------------------------------------------------------------- DATUM --
+ * A fixed reference tick. Makes indexed movement measurable rather than
+ * decorative. One per indexed system. Never moves.
+ */
+.v-datum {
+  inline-size: 1px;
+  block-size: 6px;
+  background-color: var(--v-gold-illuminated);
+  flex: none;
+}
+
+/* ------------------------------------------------------------------ TEXT -- */
+.v-machine {
+  font-family: var(--font-atlas-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--v-text-machine);
+  font-size: 12px;
+}
+
+/* ----------------------------------------------------------------- FOCUS -- */
+[data-atlas='v2'] :focus-visible {
+  outline: 2px solid var(--v-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--v-fillet);
+}

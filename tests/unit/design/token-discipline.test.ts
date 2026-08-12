@@ -25,6 +25,13 @@ const ALLOWLIST = new Map<string, string>([
   ['src/styles/tokens.css', 'the token definitions themselves'],
   ['src/app/manifest.ts', 'consumed by the OS, which cannot read CSS variables'],
   ['src/app/layout.tsx', 'themeColor meta tag, which cannot read CSS variables'],
+
+  // VP1 design lab. Removed when the V2 language is promoted in VP2.
+  ['src/styles/v2/tokens.css', 'the V2 candidate token definitions themselves'],
+  [
+    'src/components/lab/lab.tsx',
+    'dev-only route; prints token VALUES as visible text so candidates can be compared on-device',
+  ],
 ]);
 
 const COLOUR_PATTERN = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/g;

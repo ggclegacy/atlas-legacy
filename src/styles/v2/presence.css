@@ -1,0 +1,480 @@
+/*
+ * ATLAS PRESENCE V2 — state machine.
+ *
+ * Every state is defined by STATIC geometry first (index position, field
+ * direction, nucleus size, housing alignment). Motion is added on top. That is
+ * what makes reduced-motion legible rather than degraded: turning animation off
+ * leaves fifteen distinguishable poses, not fifteen identical rings.
+ *
+ * IDLE HAS NO ANIMATION AT ALL. Atlas at rest is still.
+ */
+
+.pv2 {
+  --pv-stroke: 2;
+  --pv-housing: var(--v-gold-structural);
+  --pv-housing-op: 1;
+  --pv-index-rot: 0deg;
+  --pv-index-op: 0;
+  --pv-field-op: 0.5;
+  --pv-field-scale: 1;
+  --pv-field-color: var(--v-energy-rest);
+  --pv-nucleus: var(--v-energy-engaged);
+  --pv-nucleus-scale: 1;
+  --pv-nucleus-op: 0.85;
+  --pv-core-op: 0;
+  --pv-prop-op: 0;
+
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  isolation: isolate;
+}
+
+.pv2--sm {
+  inline-size: 24px;
+  block-size: 24px;
+  --pv-stroke: 3;
+}
+.pv2--md {
+  inline-size: 56px;
+  block-size: 56px;
+  --pv-stroke: 2;
+}
+.pv2--lg {
+  inline-size: 96px;
+  block-size: 96px;
+  --pv-stroke: 1.5;
+}
+
+/* Intelligence field: volumetric, interior, never an edge. */
+.pv2__field {
+  position: absolute;
+  inset: 16%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--pv-field-color) 0%,
+    color-mix(in srgb, var(--pv-field-color) 45%, transparent) 45%,
+    transparent 72%
+  );
+  opacity: var(--pv-field-op);
+  transform: scale(var(--pv-field-scale));
+  transition:
+    opacity var(--t-focus) var(--ease-atlas),
+    transform var(--t-focus) var(--ease-atlas),
+    background var(--t-focus) var(--ease-atlas);
+}
+
+.pv2__svg {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.pv2__housing path {
+  stroke: var(--pv-housing);
+  stroke-width: var(--pv-stroke);
+  stroke-linecap: round;
+  opacity: var(--pv-housing-op);
+  transition:
+    stroke var(--t-focus) var(--ease-atlas),
+    opacity var(--t-focus) var(--ease-atlas);
+}
+
+.pv2__datum {
+  stroke: var(--v-gold-illuminated);
+  stroke-width: calc(var(--pv-stroke) * 0.8);
+  stroke-linecap: round;
+}
+
+.pv2__index {
+  transform: rotate(var(--pv-index-rot));
+  transform-origin: 50% 50%;
+  transition: transform var(--t-shift) var(--ease-atlas);
+}
+
+.pv2__index path {
+  stroke: var(--v-gold-authority);
+  stroke-width: calc(var(--pv-stroke) * 0.9);
+  stroke-linecap: round;
+  opacity: var(--pv-index-op);
+  transition: opacity var(--t-focus) var(--ease-atlas);
+}
+
+.pv2__prop line {
+  stroke: var(--v-energy-output);
+  stroke-width: calc(var(--pv-stroke) * 0.7);
+  stroke-linecap: round;
+  stroke-dasharray: 5 5;
+  stroke-dashoffset: 2.5;
+  opacity: var(--pv-prop-op);
+  transition: opacity var(--t-focus) var(--ease-atlas);
+}
+
+.pv2__nucleus {
+  fill: var(--pv-nucleus);
+  opacity: var(--pv-nucleus-op);
+  transform: scale(var(--pv-nucleus-scale));
+  transform-origin: 50% 50%;
+  transition:
+    fill var(--t-focus) var(--ease-atlas),
+    opacity var(--t-focus) var(--ease-atlas),
+    transform var(--t-focus) var(--ease-atlas);
+}
+
+/* Internal detail — the visible sign of computation inside the core. */
+.pv2__core line {
+  stroke: var(--v-void);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  opacity: var(--pv-core-op);
+  transition: opacity var(--t-focus) var(--ease-atlas);
+}
+
+/* ======================================================== STATE  TABLE == */
+
+/* IDLE — present, not working. Deliberately motionless. */
+.pv2[data-state='idle'] {
+  --pv-field-op: 0.4;
+  --pv-nucleus-op: 0.7;
+  --pv-nucleus-scale: 0.82;
+}
+
+/* ATTENTIVE — input noticed. Index advances one stop. */
+.pv2[data-state='attentive'] {
+  --pv-index-rot: 30deg;
+  --pv-index-op: 1;
+  --pv-field-op: 0.7;
+  --pv-field-color: var(--v-energy-engaged);
+  --pv-nucleus-scale: 0.95;
+}
+
+/* LISTENING — receiving. Field breathes inward with input. */
+.pv2[data-state='listening'] {
+  --pv-index-rot: 30deg;
+  --pv-index-op: 1;
+  --pv-field-color: var(--v-energy-engaged);
+  --pv-prop-op: 0.8;
+}
+.pv2[data-state='listening'] .pv2__field {
+  animation: pv-listen 1600ms var(--ease-atlas) infinite;
+}
+.pv2[data-state='listening'] .pv2__prop line {
+  animation: pv-flow-in 1600ms linear infinite;
+}
+
+/* UNDERSTANDING — concentrating. The core contracts. */
+.pv2[data-state='understanding'] {
+  --pv-index-rot: 60deg;
+  --pv-index-op: 1;
+  --pv-field-op: 0.8;
+  --pv-field-scale: 0.85;
+  --pv-field-color: var(--v-energy-engaged);
+  --pv-nucleus-scale: 0.72;
+  --pv-nucleus: var(--v-energy-reason);
+}
+
+/* RETRIEVING — energy INWARD. Context being gathered. */
+.pv2[data-state='retrieving'] {
+  --pv-index-op: 1;
+  --pv-field-op: 0.75;
+  --pv-field-color: var(--v-energy-reason);
+  --pv-prop-op: 1;
+}
+.pv2[data-state='retrieving'] .pv2__prop line {
+  animation: pv-flow-in 1100ms linear infinite;
+}
+.pv2[data-state='retrieving'] .pv2__index {
+  animation: pv-index-advance 3600ms steps(12, end) infinite;
+}
+
+/* THINKING — internal complexity. Contained; nothing escapes the housing. */
+.pv2[data-state='thinking'] {
+  --pv-index-op: 1;
+  --pv-field-op: 0.95;
+  --pv-field-color: var(--v-energy-reason);
+  --pv-nucleus: var(--v-energy-output);
+  --pv-nucleus-scale: 1.06;
+  --pv-core-op: 0.9;
+}
+.pv2[data-state='thinking'] .pv2__field {
+  animation: pv-reason 2200ms var(--ease-atlas) infinite;
+}
+.pv2[data-state='thinking'] .pv2__core {
+  animation: pv-core-index 1800ms steps(6, end) infinite;
+  transform-origin: 50% 50%;
+}
+.pv2[data-state='thinking'] .pv2__index {
+  animation: pv-index-advance 5400ms steps(12, end) infinite;
+}
+
+/* SYNTHESIZING — streams converge into the core. */
+.pv2[data-state='synthesizing'] {
+  --pv-index-rot: 180deg;
+  --pv-index-op: 1;
+  --pv-field-op: 1;
+  --pv-field-color: var(--v-energy-reason);
+  --pv-nucleus: var(--v-energy-output);
+  --pv-nucleus-scale: 1.12;
+  --pv-core-op: 0.9;
+  --pv-prop-op: 1;
+}
+.pv2[data-state='synthesizing'] .pv2__prop line {
+  animation: pv-flow-in 900ms linear infinite;
+}
+
+/* STREAMING — energy OUTWARD. Result being emitted. */
+.pv2[data-state='streaming'] {
+  --pv-index-op: 1;
+  --pv-field-op: 0.9;
+  --pv-field-color: var(--v-energy-output);
+  --pv-nucleus: var(--v-energy-output);
+  --pv-nucleus-scale: 1.1;
+  --pv-prop-op: 1;
+}
+.pv2[data-state='streaming'] .pv2__prop line {
+  animation: pv-flow-out 900ms linear infinite;
+}
+.pv2[data-state='streaming'] .pv2__index {
+  animation: pv-index-advance 2400ms steps(12, end) infinite;
+}
+
+/* SPEAKING — output with cadence. */
+.pv2[data-state='speaking'] {
+  --pv-index-op: 1;
+  --pv-field-op: 0.85;
+  --pv-field-color: var(--v-energy-output);
+  --pv-nucleus: var(--v-energy-output);
+}
+.pv2[data-state='speaking'] .pv2__nucleus {
+  animation: pv-voice 700ms var(--ease-atlas) infinite;
+}
+
+/* WORKING — a background process advancing. Periodic single steps. */
+.pv2[data-state='working'] {
+  --pv-index-op: 1;
+  --pv-field-op: 0.5;
+  --pv-field-color: var(--v-energy-engaged);
+  --pv-nucleus-scale: 0.9;
+}
+.pv2[data-state='working'] .pv2__index {
+  animation: pv-index-advance 9600ms steps(12, end) infinite;
+}
+
+/* WAITING — blocked on something external. Everything holds. */
+.pv2[data-state='waiting'] {
+  --pv-index-rot: 150deg;
+  --pv-index-op: 1;
+  --pv-field-op: 0.35;
+  --pv-nucleus-scale: 0.85;
+  --pv-nucleus-op: 0.6;
+}
+
+/* AWAITING APPROVAL — cognition withdraws; gold authority, still. */
+.pv2[data-state='awaiting_approval'] {
+  --pv-housing: var(--v-gold-illuminated);
+  --pv-index-op: 1;
+  --pv-index-rot: 0deg;
+  --pv-field-op: 0;
+  --pv-nucleus: var(--v-gold-authority);
+  --pv-nucleus-op: 1;
+  --pv-nucleus-scale: 0.9;
+}
+
+/* WARNING — one segment opens. */
+.pv2[data-state='warning'] {
+  --pv-field-op: 0.3;
+  --pv-nucleus: var(--v-warning);
+  --pv-nucleus-op: 0.9;
+  --pv-nucleus-scale: 0.85;
+}
+.pv2[data-state='warning'] .pv2__seg--1 {
+  transform: rotate(7deg);
+  transform-origin: 50% 50%;
+}
+
+/* ERROR — broken geometry. Still. Never a flashing colour. */
+.pv2[data-state='error'] {
+  --pv-housing: var(--v-danger);
+  --pv-housing-op: 0.8;
+  --pv-field-op: 0;
+  --pv-nucleus: var(--v-danger);
+  --pv-nucleus-op: 0.85;
+  --pv-nucleus-scale: 0.7;
+}
+.pv2[data-state='error'] .pv2__seg--0 {
+  transform: translate(2px, 1.2px) rotate(-4deg);
+  transform-origin: 50% 50%;
+}
+.pv2[data-state='error'] .pv2__datum {
+  stroke: var(--v-danger);
+}
+
+/* OFFLINE — absent interior. */
+.pv2[data-state='offline'] {
+  --pv-housing: var(--v-line-structural);
+  --pv-housing-op: 0.55;
+  --pv-field-op: 0;
+  --pv-nucleus-op: 0;
+}
+.pv2[data-state='offline'] .pv2__housing path {
+  stroke-dasharray: 2 4;
+}
+.pv2[data-state='offline'] .pv2__datum {
+  stroke: var(--v-line-structural);
+}
+
+/* ============================================================ KEYFRAMES == */
+
+@keyframes pv-listen {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes pv-reason {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(0.96);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    opacity: 0.85;
+    transform: scale(0.99);
+  }
+}
+
+@keyframes pv-voice {
+  0%,
+  100% {
+    transform: scale(0.86);
+  }
+  35% {
+    transform: scale(1.18);
+  }
+  70% {
+    transform: scale(0.98);
+  }
+}
+
+/* Dash travel toward the centre — knowledge arriving. */
+@keyframes pv-flow-in {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 10;
+  }
+}
+
+/* Dash travel away from the centre — result leaving. */
+@keyframes pv-flow-out {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* steps() is the whole point: the index ARRIVES, it does not glide. */
+@keyframes pv-index-advance {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pv-core-index {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+/* ======================================================= REDUCED MOTION ==
+ * Animation stops; the pose remains. Each state keeps a distinct static form
+ * so all fifteen are still tellable apart. Written twice because the manual
+ * lab toggle and the OS setting must both apply.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .pv2 *,
+  .pv2 {
+    animation: none !important;
+  }
+  .pv2[data-state='listening'] .pv2__prop line,
+  .pv2[data-state='retrieving'] .pv2__prop line,
+  .pv2[data-state='synthesizing'] .pv2__prop line {
+    stroke-dashoffset: 3.2;
+  }
+  .pv2[data-state='streaming'] .pv2__prop line {
+    stroke-dashoffset: -3.2;
+  }
+  .pv2[data-state='thinking'] {
+    --pv-nucleus-scale: 1.12;
+  }
+  .pv2[data-state='thinking'] .pv2__core {
+    transform: rotate(30deg);
+    transform-origin: 50% 50%;
+  }
+  .pv2[data-state='retrieving'] {
+    --pv-index-rot: 90deg;
+  }
+  .pv2[data-state='streaming'] {
+    --pv-index-rot: 270deg;
+  }
+  .pv2[data-state='working'] {
+    --pv-index-rot: 210deg;
+  }
+  .pv2[data-state='speaking'] {
+    --pv-nucleus-scale: 1.18;
+  }
+}
+
+[data-motion='reduced'] .pv2 *,
+[data-motion='reduced'] .pv2 {
+  animation: none !important;
+}
+[data-motion='reduced'] .pv2[data-state='listening'] .pv2__prop line,
+[data-motion='reduced'] .pv2[data-state='retrieving'] .pv2__prop line,
+[data-motion='reduced'] .pv2[data-state='synthesizing'] .pv2__prop line {
+  stroke-dashoffset: 3.2;
+}
+[data-motion='reduced'] .pv2[data-state='streaming'] .pv2__prop line {
+  stroke-dashoffset: -3.2;
+}
+[data-motion='reduced'] .pv2[data-state='thinking'] {
+  --pv-nucleus-scale: 1.12;
+}
+[data-motion='reduced'] .pv2[data-state='thinking'] .pv2__core {
+  transform: rotate(30deg);
+  transform-origin: 50% 50%;
+}
+[data-motion='reduced'] .pv2[data-state='retrieving'] {
+  --pv-index-rot: 90deg;
+}
+[data-motion='reduced'] .pv2[data-state='streaming'] {
+  --pv-index-rot: 270deg;
+}
+[data-motion='reduced'] .pv2[data-state='working'] {
+  --pv-index-rot: 210deg;
+}
+[data-motion='reduced'] .pv2[data-state='speaking'] {
+  --pv-nucleus-scale: 1.18;
+}

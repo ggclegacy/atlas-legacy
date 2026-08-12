@@ -1,0 +1,409 @@
+/*
+ * ATLAS V2 — Command Aperture, indexed navigation, motion grammar. (VP1)
+ */
+
+/* ======================================================= COMMAND APERTURE ==
+ * A cut into the plane with an instrument seated in it.
+ */
+.ap {
+  --ap-illum: transparent;
+  --ap-illum-pos: 50%;
+  position: relative;
+  background-color: var(--v-structure);
+  border-radius: var(--v-plane);
+  overflow: hidden;
+  transition: transform var(--t-focus) var(--ease-atlas);
+}
+
+/* Scope band — thin, structural, grows later to hold attachments and tools. */
+.ap__scope {
+  display: flex;
+  align-items: center;
+  gap: var(--v-inset);
+  padding: 6px 12px 4px;
+  border-block-end: 1px solid var(--v-line-soft);
+}
+
+.ap__scope-text {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v-gold-authority);
+}
+
+.ap__scope-ctx {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v-text-tertiary);
+}
+.ap__scope-ctx::before {
+  content: '· ';
+}
+
+/* The recessed channel. Dark lip above, lit floor below. */
+.ap__housing {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--v-inset);
+  padding: 8px;
+  background-color: var(--v-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--v-line-recessed),
+    inset 0 -1px 0 0 var(--v-line-raised);
+  transition: background-color var(--t-focus) var(--ease-atlas);
+}
+
+/* Future capability seam. Occupies no space until something needs it. */
+.ap__augment {
+  display: none;
+}
+
+.ap__intake {
+  flex: 1;
+  min-inline-size: 0;
+  /* 16px minimum — anything smaller makes iOS Safari zoom the viewport. */
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--v-text-primary);
+  background: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+  padding: 10px 4px;
+  max-block-size: 128px;
+}
+
+.ap__intake::placeholder {
+  color: var(--v-text-tertiary);
+}
+
+.ap__actuator {
+  flex: none;
+  /* 44px touch target even though the Presence inside is 24px. */
+  inline-size: var(--v-tap);
+  block-size: var(--v-tap);
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--v-fillet);
+  cursor: pointer;
+  transition: opacity var(--t-acknowledge) var(--ease-atlas);
+}
+
+.ap__actuator:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Illumination edge — carries state. Colour comes FROM the actuator. */
+.ap__illum {
+  block-size: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--ap-illum) var(--ap-illum-pos),
+    transparent 100%
+  );
+  transition:
+    background-image var(--t-focus) var(--ease-atlas),
+    opacity var(--t-focus) var(--ease-atlas);
+}
+
+/* ---- Aperture states ---- */
+
+.ap[data-state='focused'],
+.ap[data-state='typing'] {
+  --ap-illum: var(--v-gold-illuminated);
+  transform: translateY(-1px);
+}
+.ap[data-state='focused'] .ap__housing,
+.ap[data-state='typing'] .ap__housing {
+  background-color: var(--v-well);
+}
+
+.ap[data-state='context'] {
+  --ap-illum: var(--v-gold-structural);
+}
+
+.ap[data-state='submitting'] {
+  --ap-illum: var(--v-gold-authority);
+}
+
+.ap[data-state='reasoning'] {
+  --ap-illum: var(--v-energy-reason);
+  /* Energy enters from the actuator end, not from the middle. */
+  --ap-illum-pos: 88%;
+}
+
+.ap[data-state='streaming'] {
+  --ap-illum: var(--v-energy-output);
+}
+.ap[data-state='streaming'] .ap__illum {
+  animation: ap-emit var(--t-transfer) linear infinite;
+}
+
+.ap[data-state='awaiting_approval'] {
+  --ap-illum: var(--v-gold-illuminated);
+  --ap-illum-pos: 50%;
+}
+.ap[data-state='awaiting_approval'] .ap__scope {
+  border-block-end-color: var(--v-gold-structural);
+}
+
+.ap[data-state='error'] {
+  --ap-illum: var(--v-danger);
+}
+.ap[data-state='error'] .ap__housing {
+  /* Housing offsets — the same broken-geometry language as Presence. */
+  transform: translateX(2px);
+}
+
+@keyframes ap-emit {
+  from {
+    --ap-illum-pos: 78%;
+  }
+  to {
+    --ap-illum-pos: 4%;
+  }
+}
+
+/* ==================================================== INDEXED NAVIGATION ==
+ * Familiar placement, engineered behaviour. The active mode occupies a
+ * measurable position marked by a gold datum; the segment recesses.
+ */
+.nav-sample {
+  display: flex;
+  background-color: var(--v-structure);
+  border-block-start: 1px solid var(--v-line-structural);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.nav-sample__item {
+  position: relative;
+  flex: 1;
+  min-block-size: var(--v-tap);
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--v-text-tertiary);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  transition:
+    color var(--t-focus) var(--ease-atlas),
+    background-color var(--t-focus) var(--ease-atlas);
+}
+
+.nav-sample__item[aria-current='page'] {
+  color: var(--v-gold-authority);
+  /* Recessed: the active segment is pressed into the plane. */
+  background-color: var(--v-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--v-line-recessed),
+    inset 0 -1px 0 0 var(--v-line-raised);
+}
+
+/* The datum sits above the active position. */
+.nav-sample__item::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inline-size: 1px;
+  block-size: 6px;
+  background-color: transparent;
+  transition: background-color var(--t-shift) var(--ease-atlas);
+}
+.nav-sample__item[aria-current='page']::before {
+  background-color: var(--v-gold-illuminated);
+}
+
+/* Desktop rail — same indexing, vertical. */
+.rail-sample {
+  inline-size: 180px;
+  background-color: var(--v-structure);
+  border-inline-end: 1px solid var(--v-line-structural);
+  padding: var(--v-inset) 0;
+}
+
+.rail-sample__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  min-block-size: var(--v-tap);
+  padding: 0 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--v-text-secondary);
+  font-size: 13px;
+  text-align: start;
+  transition: color var(--t-focus) var(--ease-atlas);
+}
+
+.rail-sample__item[aria-current='page'] {
+  color: var(--v-text-primary);
+  background-color: var(--v-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--v-line-recessed),
+    inset 0 -1px 0 0 var(--v-line-raised);
+}
+
+.rail-sample__item::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inline-size: 1px;
+  block-size: 0;
+  background-color: var(--v-gold-illuminated);
+  transition: block-size var(--t-shift) var(--ease-atlas);
+}
+.rail-sample__item[aria-current='page']::before {
+  block-size: 18px;
+}
+
+/* SHIFT — the well's contents exchange; the chassis never moves. */
+.shift-field {
+  position: relative;
+  min-block-size: 92px;
+}
+.shift-field__content {
+  transition: opacity var(--t-shift) var(--ease-atlas);
+}
+.shift-field[data-shifting='true'] .shift-field__content {
+  opacity: 0;
+}
+
+/* ========================================================= MOTION GRAMMAR == */
+.motion-demo {
+  display: grid;
+  place-items: center;
+  min-block-size: 76px;
+  background-color: var(--v-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--v-line-recessed),
+    inset 0 -1px 0 0 var(--v-line-raised);
+  overflow: hidden;
+}
+
+.motion-token {
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--v-fillet);
+  background-color: var(--v-surface);
+  box-shadow: inset 0 1px 0 0 var(--v-line-raised);
+}
+
+/* ACKNOWLEDGE — input received. Local, no travel. */
+.motion-demo[data-cat='acknowledge'][data-run='true'] .motion-token {
+  animation: m-acknowledge var(--t-acknowledge) var(--ease-atlas);
+}
+@keyframes m-acknowledge {
+  50% {
+    background-color: var(--v-gold-structural);
+  }
+}
+
+/* FOCUS — attention concentrates. */
+.motion-demo[data-cat='focus'][data-run='true'] .motion-token {
+  animation: m-focus var(--t-focus) var(--ease-atlas);
+}
+@keyframes m-focus {
+  to {
+    box-shadow:
+      inset 0 1px 0 0 var(--v-gold-illuminated),
+      0 0 0 1px var(--v-gold-structural);
+  }
+}
+
+/* SHIFT — operational mode change. Contents exchange, chassis fixed. */
+.motion-demo[data-cat='shift'][data-run='true'] .motion-token {
+  animation: m-shift var(--t-shift) var(--ease-atlas);
+}
+@keyframes m-shift {
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* TRANSFER — context travels between regions. Directional. */
+.motion-demo[data-cat='transfer'][data-run='true'] .motion-token {
+  animation: m-transfer var(--t-transfer) var(--ease-atlas);
+}
+@keyframes m-transfer {
+  0% {
+    transform: translateX(-64px);
+    background-color: var(--v-energy-reason);
+  }
+  100% {
+    transform: translateX(64px);
+    background-color: var(--v-energy-output);
+  }
+}
+
+/* EXPAND — anchored to origin, never centre-out. */
+.motion-demo[data-cat='expand'][data-run='true'] .motion-token {
+  animation: m-expand var(--t-expand) var(--ease-atlas);
+  transform-origin: left center;
+}
+@keyframes m-expand {
+  from {
+    transform: scaleX(0.2);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* RESOLVE — settle, decay. No bounce. */
+.motion-demo[data-cat='resolve'][data-run='true'] .motion-token {
+  animation: m-resolve var(--t-resolve) var(--ease-settle);
+}
+@keyframes m-resolve {
+  from {
+    background-color: var(--v-energy-output);
+    transform: scale(1.14);
+  }
+  to {
+    background-color: var(--v-surface);
+    transform: scale(1);
+  }
+}
+
+/* DISTURB — one displacement, once. Never loops. */
+.motion-demo[data-cat='disturb'][data-run='true'] .motion-token {
+  animation: m-disturb var(--t-disturb) var(--ease-atlas);
+}
+@keyframes m-disturb {
+  30% {
+    transform: translateX(-3px);
+  }
+  70% {
+    transform: translateX(3px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-demo .motion-token,
+  .ap__illum {
+    animation: none !important;
+  }
+}
+[data-motion='reduced'] .motion-demo .motion-token,
+[data-motion='reduced'] .ap__illum {
+  animation: none !important;
+}
