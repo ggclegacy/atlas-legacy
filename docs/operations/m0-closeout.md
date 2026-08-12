@@ -38,28 +38,49 @@ Against the live production URL:
 - No `x-powered-by`. No environment values or secrets in any response.
 - Route classification from the build: `/` static, `/api/health` dynamic (`ƒ`).
 
-## Deployment protection — important operational note
+## Deployment protection — measured, not assumed
 
-The Vercel project has **SSO Deployment Protection** set to
-`all_except_custom_domains`. Because no custom domain is attached yet, **every**
-URL — including production — requires Vercel authentication.
+The Vercel project has SSO Deployment Protection set to
+`all_except_custom_domains`. What that means in practice was **measured
+anonymously**, because the setting name is misleading:
 
-This is deliberately left ON. Atlas has no application-level authentication
-until M3; Vercel SSO is currently the only thing standing in front of it.
-Disabling it would publish an unauthenticated Atlas to the internet.
+| URL                                                | Anonymous request | Protected?      |
+| -------------------------------------------------- | ----------------- | --------------- |
+| `atlas-legacy-omega.vercel.app` (production alias) | **200**           | **No — public** |
+| deployment-specific production URL                 | 302 → Vercel SSO  | Yes             |
+| preview deployment URLs                            | 302 → Vercel SSO  | Yes             |
 
-Consequences to know:
+So: **preview deployments are protected. Production is publicly reachable.**
 
-- Opening Atlas on a phone requires being signed in to Vercel in that browser.
-- Automated health checks need the header
-  `x-vercel-protection-bypass: <secret>`. A **Protection Bypass for Automation**
-  secret exists on the project for this purpose. It is stored in Vercel only —
-  it is not in this repository, and it must never be committed.
+### What this means right now
 
-The setting is already correct for the future: when a custom domain is attached
-before M3, that domain is excluded from protection, so Atlas's own passkey auth
-becomes the gate while the `.vercel.app` URLs stay locked. **No setting change
-will be needed at M3 — just attach the domain.**
+Atlas has **no application-level authentication until M3**. Production is
+therefore open to anyone with the URL. At M0 the exposure is small — a static
+foundation page, plus a health endpoint disclosing the environment name and
+commit SHA. It is not nothing, and it does not stay small:
+
+- **M1** puts the Atlas UI shell on a public URL.
+- **M2** puts a database behind it.
+- **M3** is the first milestone that adds a real gate (passkey auth).
+
+**Decision required before M1 ships.** Either:
+
+1. Set Deployment Protection to cover production as well, and use a Protection
+   Bypass for Automation secret for health checks — keeps Atlas private until
+   its own auth exists; or
+2. Accept a public production surface until M3, on the basis that nothing
+   sensitive is served before then.
+
+Recommendation is (1): Atlas is a private system by design, and the window
+between M1 and M3 is exactly when a public URL starts serving something worth
+protecting.
+
+### Protection Bypass for Automation
+
+A bypass secret was generated during this closeout to verify the protected
+preview URLs, then **revoked** — the project currently has zero bypass secrets.
+If automated preview smoke tests are added later, generate a fresh one and store
+it in CI secrets. It must never be committed to this repository.
 
 ## CI — Verified
 
@@ -111,9 +132,10 @@ catch, and it was found on the very first run.
 
 ## Known gaps at M0 close
 
-| Gap                           | Status                                                         |
-| ----------------------------- | -------------------------------------------------------------- |
-| Repository is **public**      | Decision pending — see report; Atlas is intended to be private |
-| Custom domain                 | Not attached. Required before M3 (passkey origin binding)      |
-| Manual phone smoke test       | Not performed by automation — Neil must do this                |
-| Database / auth / AI / design | Not in M0 by design (M1–M4)                                    |
+| Gap                           | Status                                                          |
+| ----------------------------- | --------------------------------------------------------------- |
+| Repository is **public**      | Decision pending. Atlas is intended to be a private system.     |
+| Production URL is **public**  | Decision pending before M1 — see "Deployment protection" above. |
+| Custom domain                 | Not attached. Required before M3 (passkey origin binding).      |
+| Manual phone smoke test       | Not performed by automation — Neil must do this.                |
+| Database / auth / AI / design | Not in M0 by design (M1–M4).                                    |
