@@ -1,130 +1,120 @@
 /*
- * ATLAS DESIGN TOKENS — the single source of truth for the Atlas visual language.
+ * ATLAS DESIGN TOKENS — Atlas Precision Core.
  *
- * Rules (docs/architecture/visual-system.md):
- *   1. No component may contain a raw colour. Use a token. A test enforces this.
- *   2. GOLD = structure and authority. Static. Present at rest.
- *   3. INTELLIGENCE BLUE = live intelligence. Temporal. Present only while
- *      Atlas is working.
- *   4. Gold and blue never compete in the same visual region.
+ * THE TWO LAWS:
+ *   GOLD ON EDGES     — gold is a surface phenomenon. It describes structure.
+ *                       It never fills an area larger than ~44px².
+ *   VIOLET IN VOLUMES — violet is a volumetric phenomenon. It originates inside
+ *                       and reveals cognition. It never strokes an edge and
+ *                       never carries text.
  *
- * Contrast figures below are WCAG ratios against --atlas-void, computed and
- * asserted by tests/unit/design/contrast.test.ts. If you change a value, that
- * test tells you what you broke.
+ * Because they occupy different dimensional registers they can coexist
+ * permanently without competing. The moment violet becomes a border or gold
+ * becomes a fill, the language collapses into a dark app with two accents.
+ *
+ * Contrast ratios are asserted by tests/unit/design/contrast.test.ts. If a value
+ * changes and a test fails, the value is wrong — not the test.
  */
 
 :root {
-  /* ---------------------------------------------------------------------
-   * SURFACES — black is command. Most of Atlas is these five values.
-   * ------------------------------------------------------------------ */
-  --atlas-void: #050506; /* page ground */
-  --atlas-surface: #0b0c0e; /* cards, rails */
-  --atlas-raised: #121316; /* elevated: composer, popovers */
-  --atlas-line: #1e2024; /* borders on non-interactive surfaces */
-  --atlas-line-soft: #16181b; /* hairlines, dividers */
+  /* ===================================================== ENVIRONMENT ===== */
+
+  /* The ground. Everything sits in this. */
+  --env-void: #050506;
 
   /*
-   * Interactive boundary. WCAG 1.4.11 wants 3:1 for the visual boundary of a
-   * form control, and the hairline above is nowhere near that. Use this — and
-   * only this — for the edge of anything the user types into or operates.
-   * Decorative card edges stay on --atlas-line, which keeps Atlas quiet.
+   * Recessed content. TRUE BLACK on purpose: on OLED the pixels switch off
+   * entirely, which is what makes a well read as genuine depth rather than as a
+   * darker rectangle. This is the material expression of recession.
    */
-  --line-strong: #63666d;
+  --env-well: #000000;
 
-  /* ---------------------------------------------------------------------
-   * GOLD — authority, hierarchy, structure. Static by default.
-   * Anchored on #C4912F, the inherited Atlas gold.
-   * ------------------------------------------------------------------ */
-  --gold-300: #e8c87e; /* 11.4:1 — emphasis text on void */
-  --gold-400: #d8ac55; /*  8.9:1 — active nav, primary label */
-  --gold-500: #c4912f; /*  7.0:1 — canonical Atlas gold */
-  --gold-600: #9c7326; /*  4.7:1 — large text / strong borders only */
-  --gold-700: #6e501a; /*  2.5:1 — NON-TEXT ONLY: borders, fills */
+  --env-structure: #0b0c0e; /* chassis planes: header, navigation */
+  --env-surface: #121316; /* raised operational surface */
+  --env-active: #17181c; /* focused surface */
+  --env-transient: #16171b; /* overlays — the only layer allowed a blurred shadow */
+  --env-shadow: rgb(0 0 0 / 0.8);
 
-  /*
-   * Rare premium treatment. Reserved for a single moment per surface —
-   * never a normal component background. Overuse makes Atlas look cheap.
-   */
-  --gold-metal: linear-gradient(
-    135deg,
-    #6e501a 0%,
-    #c4912f 38%,
-    #e8c87e 50%,
-    #c4912f 62%,
-    #6e501a 100%
-  );
+  /* =========================================================== LINES ===== */
+  --line-structural: #1e2024; /* the standard hairline */
+  --line-soft: #16181b; /* dividers inside a group */
+  --line-recessed: #08090b; /* dark inner edge of a cut */
+  --line-raised: #26282d; /* lit inner edge of a cut */
+  --line-interactive: #63666d; /* form-control boundary — WCAG 1.4.11, 3.2:1 */
+  --line-active: var(--gold-illuminated);
 
-  /* ---------------------------------------------------------------------
-   * INTELLIGENCE BLUE — cyan-leaning, electric. Appears only when Atlas is
-   * actively doing something. Never decorative, never present at rest.
-   * ------------------------------------------------------------------ */
-  --intel-300: #9bdcff; /* 13.2:1 — text on active surfaces */
-  --intel-400: #5cc6ff; /* 10.5:1 — primary active state */
-  --intel-500: #1fa8f0; /*  7.5:1 — core intelligence colour */
-  --intel-600: #0b72ae; /*  3.1:1 — NON-TEXT ONLY: fills, rings */
+  /* ============================================================ GOLD =====
+   * Structural by default. Anchored on the inherited Atlas gold #C4912F.   */
+  --gold-structural: #6e501a; /* dim hairlines · 2.5:1 · NON-TEXT ONLY */
+  --gold-illuminated: #c4912f; /* canonical Atlas gold · 7.0:1 */
+  --gold-authority: #d8ac55; /* approval / authority state · 8.9:1 */
+  --gold-specular: #f0dcae; /* 1px highlights ONLY */
 
-  /*
-   * Emitted light, not a fill. Only ever used as a shadow/halo on an element
-   * that is genuinely active. Low alpha on purpose.
-   */
-  --intel-glow: 0 0 0 1px rgb(92 198 255 / 0.28), 0 0 18px -4px rgb(92 198 255 / 0.45);
+  /* ========================================================== VIOLET =====
+   * Deep indigo-violet. Energy visible inside dark glass, never neon.
+   *
+   * ENERGY is volumetric and non-informational — any luminance, never text.
+   * SIGNAL is informational and must clear 3:1 on every surface.            */
+  --energy-rest: #1c1640;
+  --energy-engaged: #3b2e8c;
+  --energy-reason: #5a46c8;
+  --energy-output: #7c68f0;
 
-  /* ---------------------------------------------------------------------
-   * TEXT
-   * ------------------------------------------------------------------ */
-  --text-primary: #f2f1ee; /* 17.6:1 — warm off-white, never pure white */
-  --text-secondary: #a8a6a1; /*  8.2:1 — supporting copy */
-  --text-tertiary: #6b6965; /*  3.6:1 — LARGE TEXT ONLY (>=24px, or >=18.66px bold) */
+  /* 4.07:1 on true black · 3.88:1 on void · 3.60:1 on surface */
+  --signal-violet: #6b5ad8;
 
-  /* ---------------------------------------------------------------------
-   * SEMANTIC — deliberately distinct from gold so a warning never reads as
-   * authority. Warning is pushed orange for exactly that reason.
-   * ------------------------------------------------------------------ */
-  --state-success: #4ec77a; /*  9.3:1 */
-  /*
-   * Warning is pushed decisively orange (hue ~15deg) rather than amber. An
-   * amber warning sits ~10deg from Atlas gold and reads as authority — the one
-   * thing a warning must never do. Warnings still always carry a text label;
-   * colour alone is never the signal.
-   */
-  --state-warning: #e8663c; /*  6.1:1 */
-  --state-danger: #e5484d; /*  5.1:1 */
-
-  /* ---------------------------------------------------------------------
-   * FOCUS — must be visible against every surface. Blue is correct here:
-   * focus is a live, transient state.
-   * ------------------------------------------------------------------ */
-  --focus-ring: var(--intel-400);
+  --focus-ring: var(--signal-violet);
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 
-  /* ---------------------------------------------------------------------
-   * RADII — restrained. Atlas is precise, not soft.
-   * ------------------------------------------------------------------ */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-full: 9999px;
+  /* ============================================================ TEXT ===== */
+  --text-primary: #f2f1ee; /* 17.6:1 — warm off-white, never pure white */
+  --text-secondary: #a8a6a1; /* 8.2:1 */
+  --text-tertiary: #6b6965; /* 3.6:1 — LARGE TEXT ONLY */
+  --text-machine: #8e9099; /* 6.6:1 — mono values, cooler than secondary */
 
-  /* ---------------------------------------------------------------------
-   * MOTION — 120–240ms. Deliberate, never showy. Transform/opacity only.
-   * ------------------------------------------------------------------ */
-  --motion-fast: 120ms;
-  --motion-base: 180ms;
-  --motion-slow: 240ms;
+  /* ======================================================== SEMANTIC =====
+   * Warning is pushed orange (~15°) rather than amber: an amber warning sits
+   * ~10° from Atlas gold and reads as authority, which is the one thing a
+   * warning must never do. Colour is never the only signal.                */
+  --state-success: #4ec77a;
+  --state-warning: #e8663c;
+  --state-danger: #e5484d;
+
+  /* =========================================================== SHAPE =====
+   * Machined, not soft. Radii are fillets, not rounded corners.            */
+  --module: 4px;
+  --radius-fillet: 2px; /* small elements */
+  --radius-plane: 4px; /* planes */
+  --radius-full: 9999px; /* the Presence datum only */
+  --edge-gap: 12px; /* hairline interruption width */
+  --inset-nest: 8px; /* nesting inset */
+
+  /* ========================================================== MOTION =====
+   * One category per cause. Nothing on the critical path exceeds 280ms.    */
+  --t-acknowledge: 90ms; /* input received */
+  --t-focus: 150ms; /* attention concentrates */
+  --t-shift: 240ms; /* operational mode changes */
+  --t-transfer: 320ms; /* context moves between regions */
+  --t-expand: 200ms; /* detail becomes available */
+  --t-resolve: 280ms; /* operation completes */
+  --t-disturb: 140ms; /* something needs attention */
+
   --ease-atlas: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-atlas-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Breathing rhythms for Atlas Presence. Slow on purpose. */
-  --presence-breath: 4200ms;
-  --presence-work: 1400ms;
+  /* =========================================================== GRAIN =====
+   * Technical banding mitigation for near-black gradients, not a motif.
+   * If it reads as texture, the value is too high.                         */
+  --grain: 0.008;
 
-  /* ---------------------------------------------------------------------
-   * LAYOUT
-   * ------------------------------------------------------------------ */
-  --nav-height: 60px; /* bottom tab bar, excluding safe area */
-  --rail-width: 224px; /* desktop navigation rail */
-  --context-width: 320px; /* desktop contextual region (functional at M5) */
-  --content-max: 720px; /* reading measure for the primary column */
-  --tap-min: 44px; /* iOS minimum touch target */
+  /* ========================================================== LAYOUT ===== */
+  --nav-height: 60px;
+  --rail-width: 224px;
+  --context-width: 320px;
+  --content-max: 720px;
+  --tap-min: 44px;
+  --header-height: 52px;
+  /* Pinned Aperture: scope band + housing + illumination edge. */
+  --aperture-height: 96px;
 }

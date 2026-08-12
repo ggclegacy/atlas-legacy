@@ -1,6 +1,4 @@
-import Link from 'next/link';
-
-import { DemoBanner, DemoTag } from '@/components/atlas/demo';
+import { DemoBanner } from '@/components/atlas/demo';
 import {
   DEMO_ACTIVITY,
   DEMO_CONVERSATIONS,
@@ -10,125 +8,112 @@ import {
   DEMO_PROPOSALS,
 } from '@/components/atlas/demo-data';
 import { Presence } from '@/components/atlas/presence';
-import { Composer } from '@/components/command/composer';
-import { Button } from '@/components/ui/button';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
+import { CommandAperture } from '@/components/command/aperture';
 
 export const metadata = { title: 'Command' };
 
 /**
- * Command — the home state.
+ * COMMAND — the home state.
  *
- * "Today" is this screen's zero state rather than a tab of its own. That keeps
- * the composer permanently primary and avoids a dashboard that displays its own
- * emptiness. When a conversation is open (M4) the briefing recedes.
+ * Presence → Atlas's language → the Aperture → one operating well.
+ *
+ * "Today" is this screen's zero state rather than a tab of its own, which keeps
+ * the Aperture permanently primary. There are no cards: related items share one
+ * recessed field and are separated by rhythm and interrupted hairlines whose
+ * labels sit in the gaps they cause.
  */
 export default function CommandPage() {
   return (
-    <div className="mx-auto max-w-(--content-max) px-4 pt-6 pb-40 md:pb-8">
-      {/* Greeting — Atlas's own voice, so it is the display face. */}
+    <div className="mx-auto max-w-(--content-max) px-4 pt-7">
+      {/* Presence and language, in void. */}
       <section className="flex items-start gap-4">
-        <Presence state="idle" size="lg" decorative className="max-sm:size-16" />
-        <div className="min-w-0 pt-1">
-          <h1 className="font-display text-3xl leading-tight text-primary sm:text-4xl">
+        <Presence state="idle" size="md" decorative className="mt-1 max-sm:scale-90" />
+        <div className="min-w-0">
+          <h1 className="text-[32px] leading-[1.12] tracking-[-0.02em] text-primary sm:text-[34px]">
             {DEMO_GREETING.salutation}
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-secondary">{DEMO_GREETING.line}</p>
+          <p className="mt-2.5 text-sm leading-relaxed text-secondary">{DEMO_GREETING.line}</p>
         </div>
       </section>
 
-      {/*
-        Rendered once. The composer positions itself: pinned above the tab bar
-        on phones, part of this column from md up.
-      */}
-      <div className="mt-6">
-        <Composer />
+      {/* Desktop: the Aperture sits in the column. Phone: it pins itself. */}
+      <div className="mt-7">
+        <CommandAperture />
       </div>
 
-      <DemoBanner className="mt-6" />
+      <DemoBanner className="mt-7" />
 
-      <div className="mt-6 space-y-4">
-        <Card>
-          <CardHeader title="Awaiting your review" action={<DemoTag />} />
-          <CardBody className="space-y-2">
-            {DEMO_PROPOSALS.map((proposal) => (
-              <div
-                key={proposal.id}
-                className="flex items-start gap-3 rounded-md border border-line-soft px-3 py-2.5"
-              >
-                <span aria-hidden className="mt-1.5 h-3 w-px shrink-0 bg-gold-600" />
-                <div className="min-w-0">
-                  <p className="text-sm leading-snug text-primary">{proposal.title}</p>
-                  <p className="mt-0.5 text-xs text-tertiary">{proposal.type}</p>
-                </div>
-              </div>
-            ))}
-            <p className="pt-1 text-xs text-tertiary">
-              Memory proposals become real in M7. Review and approval land with them.
-            </p>
-          </CardBody>
-        </Card>
+      {/* One operating well. Four rhythm groups, no boxes. */}
+      <section className="well well--bleed mt-7 pt-4 pb-6">
+        <div className="rule">
+          <span className="rule__label">Awaiting review</span>
+          <span className="rule__value" data-numeric>
+            {DEMO_PROPOSALS.length}
+          </span>
+        </div>
+        <ul className="mt-3 mb-7">
+          {DEMO_PROPOSALS.map((p) => (
+            <li key={p.id} className="border-b border-line-soft py-2.5 last:border-b-0">
+              <p className="text-sm leading-snug text-primary">{p.title}</p>
+              <p className="machine mt-1">{p.type}</p>
+            </li>
+          ))}
+        </ul>
 
-        <Card>
-          <CardHeader
-            title="Active projects"
-            action={
-              <Button asChild variant="ghost" className="h-8 px-2 text-xs">
-                <Link href="/projects">All</Link>
-              </Button>
-            }
-          />
-          <CardBody className="space-y-1.5">
-            {DEMO_PROJECTS.filter((p) => p.status === 'active').map((project) => (
-              <div key={project.id} className="flex items-baseline justify-between gap-3 py-1">
-                <div className="min-w-0">
-                  <p className="truncate text-sm text-primary">{project.name}</p>
-                  <p className="truncate text-xs text-tertiary">{project.org}</p>
-                </div>
-                <span className="shrink-0 text-xs text-secondary" data-numeric>
-                  {project.openGoals} open
-                </span>
-              </div>
-            ))}
-          </CardBody>
-        </Card>
+        <div className="rule">
+          <span className="rule__label">Active projects</span>
+        </div>
+        <ul className="mt-3 mb-7">
+          {DEMO_PROJECTS.filter((p) => p.status === 'active').map((p) => (
+            <li key={p.id} className="entry">
+              <span className="min-w-0">
+                <span className="entry__title block truncate">{p.name}</span>
+                <span className="machine">{p.org}</span>
+              </span>
+              <span className="machine shrink-0" data-numeric>
+                {p.openGoals} open
+              </span>
+            </li>
+          ))}
+        </ul>
 
-        <Card>
-          <CardHeader title="Open goals" action={<DemoTag />} />
-          <CardBody className="space-y-1.5">
-            {DEMO_GOALS.map((goal) => (
-              <div key={goal.id} className="flex items-baseline justify-between gap-3 py-1">
-                <p className="min-w-0 truncate text-sm text-primary">{goal.title}</p>
-                <span className="shrink-0 text-xs text-tertiary">{goal.project}</span>
-              </div>
-            ))}
-          </CardBody>
-        </Card>
+        <div className="rule">
+          <span className="rule__label">Open goals</span>
+        </div>
+        <ul className="mt-3 mb-7">
+          {DEMO_GOALS.map((g) => (
+            <li key={g.id} className="entry">
+              <span className="entry__title truncate">{g.title}</span>
+              <span className="machine shrink-0">{g.project}</span>
+            </li>
+          ))}
+        </ul>
 
-        <Card>
-          <CardHeader title="Recent" action={<DemoTag />} />
-          <CardBody className="space-y-1.5">
-            {DEMO_CONVERSATIONS.map((conversation) => (
-              <div key={conversation.id} className="flex items-baseline justify-between gap-3 py-1">
-                <p className="min-w-0 truncate text-sm text-primary">{conversation.title}</p>
-                <span className="shrink-0 text-xs text-tertiary">{conversation.when}</span>
-              </div>
-            ))}
-          </CardBody>
-        </Card>
+        <div className="rule">
+          <span className="rule__label">Recent</span>
+        </div>
+        <ul className="mt-3">
+          {DEMO_CONVERSATIONS.map((c) => (
+            <li key={c.id} className="entry">
+              <span className="entry__title truncate">{c.title}</span>
+              <span className="machine shrink-0">{c.when}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-        <section aria-label="Recent activity" className="px-1 pt-1">
-          <ul className="space-y-1">
-            {DEMO_ACTIVITY.map((entry) => (
-              <li key={entry.id} className="flex items-baseline gap-2 text-xs text-tertiary">
-                <span aria-hidden className="size-1 rounded-full bg-line" />
-                <span className="min-w-0 truncate">{entry.text}</span>
-                <span className="ml-auto shrink-0">{entry.when}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+      {/* Activity — machine values, quiet, outside the well. */}
+      <section aria-label="Recent activity" className="mt-6 pb-4">
+        <ul>
+          {DEMO_ACTIVITY.map((a) => (
+            <li key={a.id} className="flex items-baseline gap-3 py-1">
+              <span aria-hidden className="size-1 shrink-0 rounded-full bg-line-raised" />
+              <span className="machine min-w-0 truncate">{a.text}</span>
+              <span className="machine ml-auto shrink-0">{a.when}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

@@ -1,62 +1,64 @@
 @import 'tailwindcss';
 @import '../styles/tokens.css';
+@import '../styles/material.css';
 @import '../styles/presence.css';
+@import '../styles/chassis.css';
 
 /*
  * Map Atlas tokens into Tailwind v4.
  *
- * `@theme inline` makes Tailwind emit `var(--atlas-void)` rather than baking in
- * the literal value, so tokens.css stays the single source of truth and can be
- * overridden at runtime later (e.g. a future high-contrast mode).
+ * `@theme inline` emits `var(--token)` rather than the literal value, so
+ * tokens.css stays the single source of truth.
  */
 @theme inline {
-  --color-void: var(--atlas-void);
-  --color-surface: var(--atlas-surface);
-  --color-raised: var(--atlas-raised);
-  --color-line: var(--atlas-line);
-  --color-line-soft: var(--atlas-line-soft);
-  --color-line-strong: var(--line-strong);
+  --color-void: var(--env-void);
+  --color-well: var(--env-well);
+  --color-structure: var(--env-structure);
+  --color-surface: var(--env-surface);
+  --color-active: var(--env-active);
 
-  --color-gold-300: var(--gold-300);
-  --color-gold-400: var(--gold-400);
-  --color-gold-500: var(--gold-500);
-  --color-gold-600: var(--gold-600);
-  --color-gold-700: var(--gold-700);
+  --color-line: var(--line-structural);
+  --color-line-soft: var(--line-soft);
+  --color-line-raised: var(--line-raised);
+  --color-line-interactive: var(--line-interactive);
 
-  --color-intel-300: var(--intel-300);
-  --color-intel-400: var(--intel-400);
-  --color-intel-500: var(--intel-500);
-  --color-intel-600: var(--intel-600);
+  --color-gold-structural: var(--gold-structural);
+  --color-gold: var(--gold-illuminated);
+  --color-gold-authority: var(--gold-authority);
+  --color-gold-specular: var(--gold-specular);
+
+  --color-energy-rest: var(--energy-rest);
+  --color-energy-engaged: var(--energy-engaged);
+  --color-energy-reason: var(--energy-reason);
+  --color-energy-output: var(--energy-output);
+  --color-signal: var(--signal-violet);
 
   --color-primary: var(--text-primary);
   --color-secondary: var(--text-secondary);
   --color-tertiary: var(--text-tertiary);
+  --color-machine: var(--text-machine);
 
   --color-success: var(--state-success);
   --color-warning: var(--state-warning);
   --color-danger: var(--state-danger);
 
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
+  --radius-fillet: var(--radius-fillet);
+  --radius-plane: var(--radius-plane);
 
   --font-sans: var(--font-atlas-ui), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-atlas-display), ui-serif, Georgia, serif;
+  --font-mono: var(--font-atlas-mono), ui-monospace, monospace;
 
   --ease-atlas: var(--ease-atlas);
 }
 
-/*
- * Motion primitives. Transform/opacity only, all within the 120–240ms band.
- * Declared here (not `inline`) so Tailwind emits the @keyframes.
- */
+/* Motion primitives. Transform/opacity only, all within 90–320ms. */
 @theme {
-  --animate-fade-in: atlas-fade-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  --animate-fade-out: atlas-fade-out 120ms cubic-bezier(0.4, 0, 1, 1);
+  --animate-fade-in: atlas-fade-in 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-fade-out: atlas-fade-out 90ms cubic-bezier(0.4, 0, 1, 1);
   --animate-sheet-in: atlas-sheet-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  --animate-sheet-out: atlas-sheet-out 180ms cubic-bezier(0.4, 0, 1, 1);
-  --animate-dialog-in: atlas-dialog-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  --animate-dialog-out: atlas-dialog-out 120ms cubic-bezier(0.4, 0, 1, 1);
+  --animate-sheet-out: atlas-sheet-out 200ms cubic-bezier(0.4, 0, 1, 1);
+  --animate-dialog-in: atlas-dialog-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-dialog-out: atlas-dialog-out 150ms cubic-bezier(0.4, 0, 1, 1);
   --animate-toast-in: atlas-toast-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-toast-out: atlas-toast-out 150ms cubic-bezier(0.4, 0, 1, 1);
 
@@ -95,21 +97,19 @@
   @keyframes atlas-dialog-in {
     from {
       opacity: 0;
-      transform: translateY(6px) scale(0.99);
+      transform: translateY(6px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateY(0);
     }
   }
   @keyframes atlas-dialog-out {
     from {
       opacity: 1;
-      transform: translateY(0) scale(1);
     }
     to {
       opacity: 0;
-      transform: translateY(4px) scale(0.99);
     }
   }
   @keyframes atlas-toast-in {
@@ -135,47 +135,56 @@
 @layer base {
   html {
     color-scheme: dark;
-    /* Prevent iOS text inflation in landscape without disabling user zoom. */
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    background-color: var(--atlas-void);
+    background-color: var(--env-void);
     color: var(--text-primary);
     font-family: var(--font-atlas-ui), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    /* Atlas is an application surface, not a document. */
     overscroll-behavior-y: none;
   }
 
-  /* Numbers must not jitter as they update. */
+  /*
+   * Grain. Technical banding mitigation for near-black gradients — not a motif.
+   * A fixed, non-interactive noise floor over the whole image.
+   */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background-image: url('/atlas/grain-64.png');
+    background-repeat: repeat;
+    opacity: var(--grain);
+  }
+
   [data-numeric] {
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1;
   }
 
-  /*
-   * One focus treatment everywhere. Focus is a live state, so it is blue —
-   * consistent with the colour discipline rather than an exception to it.
-   */
+  /* Focus is a live, transient state, so it is violet — consistent with the
+     colour law rather than an exception to it. */
   :focus-visible {
     outline: var(--focus-ring-width) solid var(--focus-ring);
     outline-offset: var(--focus-ring-offset);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-fillet);
   }
 
   ::selection {
-    background-color: color-mix(in srgb, var(--gold-500) 30%, transparent);
+    background-color: color-mix(in srgb, var(--gold-illuminated) 28%, transparent);
     color: var(--text-primary);
   }
 }
 
 /*
  * Reduced motion: Atlas must remain LEGIBLE, not merely still. Continuous
- * animation stops, but state-distinguishing properties (opacity, colour) are
- * preserved so Presence states are still tellable apart. See
- * docs/architecture/visual-system.md.
+ * animation stops; state-distinguishing static properties are preserved (see
+ * presence.css).
  */
 @media (prefers-reduced-motion: reduce) {
   *,

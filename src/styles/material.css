@@ -1,0 +1,193 @@
+/*
+ * ATLAS MATERIAL — depth without blur.
+ *
+ * Depth is 1px luminance differentials and true-black recession. Explicitly
+ * NOT: backdrop-filter (measured WebKit failure in M1), large shadows,
+ * glassmorphism, or embossing.
+ */
+
+/* ------------------------------------------------------------------ WELL --
+ * Content is CUT INTO structure, not raised onto it. Dark lip above, lit floor
+ * below. That inversion is the entire recession effect.
+ */
+.well {
+  background-color: var(--env-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--line-recessed),
+    inset 0 -1px 0 0 var(--line-raised);
+}
+
+/*
+ * Phone: wells run off the edge with radius 0, which is what makes them read
+ * as a cut into something larger rather than a card. Horizontal bleed also
+ * refuses to waste the scarcest dimension Atlas has.
+ */
+.well--bleed {
+  border-radius: 0;
+  margin-inline: calc(var(--module) * -4);
+  padding-inline: calc(var(--module) * 4);
+}
+
+@media (min-width: 768px) {
+  .well--bleed {
+    margin-inline: 0;
+    border-radius: var(--radius-plane);
+  }
+}
+
+/* --------------------------------------------------------------- SURFACE --
+ * Raised: inverse bevel. Lit above, shadowed below.
+ */
+.surface {
+  background-color: var(--env-surface);
+  border-radius: var(--radius-plane);
+  box-shadow:
+    inset 0 1px 0 0 var(--line-raised),
+    inset 0 -1px 0 0 var(--line-recessed);
+}
+
+.surface--active {
+  background-color: var(--env-active);
+}
+
+/* Transient overlays: the ONLY layer permitted a blurred shadow. */
+.transient {
+  background-color: var(--env-transient);
+  box-shadow:
+    inset 0 1px 0 0 var(--line-raised),
+    0 8px 24px -8px var(--env-shadow);
+}
+
+/* ------------------------------------------------------------- HAIRLINES --
+ * Every interruption is CAUSED by something. The label creates the gap; the
+ * gap is not decoration. Implemented as a flex row so the cause is literal.
+ */
+.rule {
+  display: flex;
+  align-items: center;
+  gap: var(--edge-gap);
+  inline-size: 100%;
+}
+
+.rule::before,
+.rule::after {
+  content: '';
+  block-size: 1px;
+  background-color: var(--line-structural);
+}
+
+.rule::before {
+  inline-size: var(--inset-nest);
+  flex: none;
+}
+
+.rule::after {
+  flex: 1;
+}
+
+.rule__label {
+  /*
+   * Yields rather than pushing the rule off-screen. The label causes the gap,
+   * so the label is what shrinks. (VP1 found nowrap broke 320px.)
+   */
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* A trailing value sitting in the same rule, right-aligned. */
+.rule__value {
+  flex: none;
+  font-family: var(--font-atlas-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text-machine);
+}
+
+/* --------------------------------------------------------- GOLD BEHAVIOUR --
+ * Illuminated alloy without skeuomorphism: luminance varies ALONG the edge,
+ * brightest where the implied light strikes. One 1px gradient. No texture.
+ */
+.gold-edge {
+  position: relative;
+}
+
+.gold-edge::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--gold-structural) 16%,
+    var(--gold-illuminated) 50%,
+    var(--gold-structural) 84%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Specular: a short, very light highlight at the implied light position. */
+.gold-specular::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 38%;
+  inline-size: 24%;
+  block-size: 1px;
+  background-image: linear-gradient(90deg, transparent, var(--gold-specular), transparent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Authority: gold and still. Used when Atlas needs a human decision. */
+.authority {
+  border: 1px solid var(--gold-illuminated);
+  border-radius: var(--radius-fillet);
+}
+
+/* ----------------------------------------------------------------- DATUM --
+ * A fixed reference tick. Makes indexed position measurable rather than
+ * decorative. One per indexed system. Never moves.
+ */
+.datum {
+  inline-size: 1px;
+  block-size: 6px;
+  background-color: var(--gold-illuminated);
+  flex: none;
+}
+
+/* ------------------------------------------------------------------ TEXT -- */
+.machine {
+  font-family: var(--font-atlas-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--text-machine);
+}
+
+/* An entry in a rhythm group — the replacement for a card. */
+.entry {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 7px;
+}
+
+.entry__title {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--text-primary);
+  min-inline-size: 0;
+}
+
+/* Nested one module deeper — used for supersession and relationships. */
+.entry--nested {
+  padding-inline-start: var(--inset-nest);
+  border-inline-start: 1px solid var(--line-soft);
+  margin-inline-start: 2px;
+}

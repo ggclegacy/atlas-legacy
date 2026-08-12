@@ -1,216 +1,386 @@
 /*
- * ATLAS PRESENCE
+ * ATLAS PRESENCE — the visual manifestation of Atlas intelligence.
  *
- * A living intelligence indicator, not decoration. CSS/SVG only — no WebGL, no
- * canvas loop, no particles. Everything animates on transform/opacity so it
- * stays cheap on a phone battery.
+ * Every state is defined by STATIC geometry first (index position, field
+ * direction, nucleus size, housing alignment). Motion is added on top. Turning
+ * animation off therefore leaves fifteen distinguishable poses, not fifteen
+ * identical rings.
  *
- * Colour discipline (docs/architecture/visual-system.md):
- *   idle / awaiting_approval  -> GOLD   (at rest, authority)
- *   thinking / streaming / listening / speaking -> INTELLIGENCE BLUE (working)
- *   error -> danger, and deliberately STILL. A calm failure, not a panic.
- *   offline -> neutral line colour, still.
- *
- * Reduced motion: animation stops, but every state keeps a distinct static
- * appearance (stroke colour, dash geometry, opacity, scale) so the state is
- * still readable. See the @media block at the end.
+ * IDLE HAS NO ANIMATION AT ALL. Atlas at rest is still.
  */
 
 .presence {
+  --p-stroke: 2;
+  --p-housing: var(--gold-structural);
+  --p-housing-op: 1;
+  --p-index-rot: 0deg;
+  --p-index-op: 0;
+  --p-field-op: 0.5;
+  --p-field-scale: 1;
+  --p-field-color: var(--energy-rest);
+  --p-nucleus: var(--energy-engaged);
+  --p-nucleus-scale: 1;
+  --p-nucleus-op: 0.85;
+  --p-core-op: 0;
+  --p-prop-op: 0;
+
+  position: relative;
   display: inline-grid;
   place-items: center;
   flex: none;
+  isolation: isolate;
+}
+
+.presence--sm {
+  inline-size: 24px;
+  block-size: 24px;
+  --p-stroke: 3;
+}
+.presence--md {
+  inline-size: 56px;
+  block-size: 56px;
+  --p-stroke: 2;
+}
+.presence--lg {
+  inline-size: 96px;
+  block-size: 96px;
+  --p-stroke: 1.5;
+}
+
+/* Intelligence field: volumetric, interior, never an edge. */
+.presence__field {
+  position: absolute;
+  inset: 16%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--p-field-color) 0%,
+    color-mix(in srgb, var(--p-field-color) 45%, transparent) 45%,
+    transparent 72%
+  );
+  opacity: var(--p-field-op);
+  transform: scale(var(--p-field-scale));
+  transition:
+    opacity var(--t-focus) var(--ease-atlas),
+    transform var(--t-focus) var(--ease-atlas),
+    background var(--t-focus) var(--ease-atlas);
 }
 
 .presence__svg {
-  width: 100%;
-  height: 100%;
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
   overflow: visible;
 }
 
-.presence__ring,
-.presence__arc,
-.presence__halo {
-  fill: none;
-  transform-origin: center;
-}
-
-.presence__ring {
-  stroke: var(--atlas-line);
-  stroke-width: 1.25;
-  transition:
-    stroke var(--motion-slow) var(--ease-atlas),
-    opacity var(--motion-slow) var(--ease-atlas);
-}
-
-.presence__arc {
-  stroke: transparent;
-  stroke-width: 1.75;
+.presence__housing path {
+  stroke: var(--p-housing);
+  stroke-width: var(--p-stroke);
   stroke-linecap: round;
-  /* ~22% of the circumference (2πr, r=19 -> ~119.4). */
-  stroke-dasharray: 26 94;
-  opacity: 0;
+  opacity: var(--p-housing-op);
   transition:
-    stroke var(--motion-slow) var(--ease-atlas),
-    opacity var(--motion-slow) var(--ease-atlas);
+    stroke var(--t-focus) var(--ease-atlas),
+    opacity var(--t-focus) var(--ease-atlas);
 }
 
-.presence__halo {
-  stroke: transparent;
-  stroke-width: 1;
-  opacity: 0;
-  transform: scale(1);
+/* Fixed reference. Rotation you can measure reads as a mechanism. */
+.presence__datum {
+  stroke: var(--gold-illuminated);
+  stroke-width: calc(var(--p-stroke) * 0.8);
+  stroke-linecap: round;
 }
 
-.presence__core {
-  fill: var(--atlas-line);
-  transform-origin: center;
+.presence__index {
+  transform: rotate(var(--p-index-rot));
+  transform-origin: 50% 50%;
+  transition: transform var(--t-shift) var(--ease-atlas);
+}
+
+.presence__index path {
+  stroke: var(--gold-authority);
+  stroke-width: calc(var(--p-stroke) * 0.9);
+  stroke-linecap: round;
+  opacity: var(--p-index-op);
+  transition: opacity var(--t-focus) var(--ease-atlas);
+}
+
+/* Direction is carried by where the dash SITS, so the static form keeps it. */
+.presence__prop line {
+  stroke: var(--energy-output);
+  stroke-width: calc(var(--p-stroke) * 0.7);
+  stroke-linecap: round;
+  stroke-dasharray: 5 5;
+  stroke-dashoffset: 2.5;
+  opacity: var(--p-prop-op);
+  transition: opacity var(--t-focus) var(--ease-atlas);
+}
+
+.presence__nucleus {
+  fill: var(--p-nucleus);
+  opacity: var(--p-nucleus-op);
+  transform: scale(var(--p-nucleus-scale));
+  transform-origin: 50% 50%;
   transition:
-    fill var(--motion-slow) var(--ease-atlas),
-    opacity var(--motion-slow) var(--ease-atlas);
+    fill var(--t-focus) var(--ease-atlas),
+    opacity var(--t-focus) var(--ease-atlas),
+    transform var(--t-focus) var(--ease-atlas);
 }
 
-/* ---------------------------------------------------------------------------
- * IDLE — gold, barely breathing. Atlas is present but not working.
- * ------------------------------------------------------------------------ */
-.presence[data-state='idle'] .presence__ring {
-  stroke: var(--gold-700);
-}
-.presence[data-state='idle'] .presence__core {
-  fill: var(--gold-600);
-  animation: presence-breath var(--presence-breath) ease-in-out infinite;
+/* Internal detail — the visible sign of computation inside the core. */
+.presence__core line {
+  stroke: var(--env-void);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  opacity: var(--p-core-op);
+  transition: opacity var(--t-focus) var(--ease-atlas);
 }
 
-/* ---------------------------------------------------------------------------
- * AWAITING APPROVAL — gold, insistent but never frantic. Authority is gold.
- * ------------------------------------------------------------------------ */
-.presence[data-state='awaiting_approval'] .presence__ring {
-  stroke: var(--gold-500);
-}
-.presence[data-state='awaiting_approval'] .presence__core {
-  fill: var(--gold-400);
-  animation: presence-pulse 1800ms ease-in-out infinite;
+/* ========================================================== STATE TABLE == */
+
+.presence[data-state='idle'] {
+  --p-field-op: 0.4;
+  --p-nucleus-op: 0.7;
+  --p-nucleus-scale: 0.82;
 }
 
-/* ---------------------------------------------------------------------------
- * THINKING — a single blue arc travelling the ring.
- * ------------------------------------------------------------------------ */
-.presence[data-state='thinking'] .presence__ring {
-  stroke: var(--atlas-line);
+.presence[data-state='attentive'] {
+  --p-index-rot: 30deg;
+  --p-index-op: 1;
+  --p-field-op: 0.7;
+  --p-field-color: var(--energy-engaged);
+  --p-nucleus-scale: 0.95;
 }
-.presence[data-state='thinking'] .presence__arc {
-  stroke: var(--intel-400);
-  opacity: 1;
-  animation: presence-orbit 1600ms linear infinite;
+
+.presence[data-state='listening'] {
+  --p-index-rot: 30deg;
+  --p-index-op: 1;
+  --p-field-color: var(--energy-engaged);
+  --p-prop-op: 0.8;
+}
+.presence[data-state='listening'] .presence__field {
+  animation: p-listen 1600ms var(--ease-atlas) infinite;
+}
+.presence[data-state='listening'] .presence__prop line {
+  animation: p-flow-in 1600ms linear infinite;
+}
+
+.presence[data-state='understanding'] {
+  --p-index-rot: 60deg;
+  --p-index-op: 1;
+  --p-field-op: 0.8;
+  --p-field-scale: 0.85;
+  --p-field-color: var(--energy-engaged);
+  --p-nucleus-scale: 0.72;
+  --p-nucleus: var(--energy-reason);
+}
+
+/* Energy INWARD — context being gathered. */
+.presence[data-state='retrieving'] {
+  --p-index-op: 1;
+  --p-field-op: 0.75;
+  --p-field-color: var(--energy-reason);
+  --p-prop-op: 1;
+}
+.presence[data-state='retrieving'] .presence__prop line {
+  animation: p-flow-in 1100ms linear infinite;
+}
+.presence[data-state='retrieving'] .presence__index {
+  animation: p-index 3600ms steps(12, end) infinite;
+}
+
+/* Internal complexity — contained; nothing escapes the housing. */
+.presence[data-state='thinking'] {
+  --p-index-op: 1;
+  --p-field-op: 0.95;
+  --p-field-color: var(--energy-reason);
+  --p-nucleus: var(--energy-output);
+  --p-nucleus-scale: 1.06;
+  --p-core-op: 0.9;
+}
+.presence[data-state='thinking'] .presence__field {
+  animation: p-reason 2200ms var(--ease-atlas) infinite;
 }
 .presence[data-state='thinking'] .presence__core {
-  fill: var(--intel-600);
+  animation: p-core 1800ms steps(6, end) infinite;
+  transform-origin: 50% 50%;
+}
+.presence[data-state='thinking'] .presence__index {
+  animation: p-index 5400ms steps(12, end) infinite;
 }
 
-/* ---------------------------------------------------------------------------
- * STREAMING — the core is lit and the arc moves faster. Atlas is emitting.
- * ------------------------------------------------------------------------ */
-.presence[data-state='streaming'] .presence__ring {
-  stroke: var(--intel-600);
-  opacity: 0.55;
+.presence[data-state='synthesizing'] {
+  --p-index-rot: 180deg;
+  --p-index-op: 1;
+  --p-field-op: 1;
+  --p-field-color: var(--energy-reason);
+  --p-nucleus: var(--energy-output);
+  --p-nucleus-scale: 1.12;
+  --p-core-op: 0.9;
+  --p-prop-op: 1;
 }
-.presence[data-state='streaming'] .presence__arc {
-  stroke: var(--intel-300);
-  opacity: 1;
-  animation: presence-orbit var(--presence-work) linear infinite;
-}
-.presence[data-state='streaming'] .presence__core {
-  fill: var(--intel-400);
-  animation: presence-pulse 900ms ease-in-out infinite;
+.presence[data-state='synthesizing'] .presence__prop line {
+  animation: p-flow-in 900ms linear infinite;
 }
 
-/* ---------------------------------------------------------------------------
- * LISTENING — concentric halo expanding outward. Atlas is receiving.
- * ------------------------------------------------------------------------ */
-.presence[data-state='listening'] .presence__ring {
-  stroke: var(--intel-500);
-  opacity: 0.7;
+/* Energy OUTWARD — result being emitted. */
+.presence[data-state='streaming'] {
+  --p-index-op: 1;
+  --p-field-op: 0.9;
+  --p-field-color: var(--energy-output);
+  --p-nucleus: var(--energy-output);
+  --p-nucleus-scale: 1.1;
+  --p-prop-op: 1;
 }
-.presence[data-state='listening'] .presence__halo {
-  stroke: var(--intel-400);
-  animation: presence-halo 2000ms ease-out infinite;
+.presence[data-state='streaming'] .presence__prop line {
+  animation: p-flow-out 900ms linear infinite;
 }
-.presence[data-state='listening'] .presence__core {
-  fill: var(--intel-400);
-}
-
-/* ---------------------------------------------------------------------------
- * SPEAKING — the core swells with cadence. Atlas is voicing.
- * ------------------------------------------------------------------------ */
-.presence[data-state='speaking'] .presence__ring {
-  stroke: var(--intel-600);
-  opacity: 0.6;
-}
-.presence[data-state='speaking'] .presence__core {
-  fill: var(--intel-300);
-  animation: presence-voice 700ms ease-in-out infinite;
+.presence[data-state='streaming'] .presence__index {
+  animation: p-index 2400ms steps(12, end) infinite;
 }
 
-/* ---------------------------------------------------------------------------
- * ERROR — still. A system that flails when it fails is not trustworthy.
- * ------------------------------------------------------------------------ */
-.presence[data-state='error'] .presence__ring {
+.presence[data-state='speaking'] {
+  --p-index-op: 1;
+  --p-field-op: 0.85;
+  --p-field-color: var(--energy-output);
+  --p-nucleus: var(--energy-output);
+}
+.presence[data-state='speaking'] .presence__nucleus {
+  animation: p-voice 700ms var(--ease-atlas) infinite;
+}
+
+.presence[data-state='working'] {
+  --p-index-op: 1;
+  --p-field-op: 0.5;
+  --p-field-color: var(--energy-engaged);
+  --p-nucleus-scale: 0.9;
+}
+.presence[data-state='working'] .presence__index {
+  animation: p-index 9600ms steps(12, end) infinite;
+}
+
+.presence[data-state='waiting'] {
+  --p-index-rot: 150deg;
+  --p-index-op: 1;
+  --p-field-op: 0.35;
+  --p-nucleus-scale: 0.85;
+  --p-nucleus-op: 0.6;
+}
+
+/* Cognition withdraws; gold authority, still. */
+.presence[data-state='awaiting_approval'] {
+  --p-housing: var(--gold-illuminated);
+  --p-index-op: 1;
+  --p-index-rot: 0deg;
+  --p-field-op: 0;
+  --p-nucleus: var(--gold-authority);
+  --p-nucleus-op: 1;
+  --p-nucleus-scale: 0.9;
+}
+
+.presence[data-state='warning'] {
+  --p-field-op: 0.3;
+  --p-nucleus: var(--state-warning);
+  --p-nucleus-op: 0.9;
+  --p-nucleus-scale: 0.85;
+}
+.presence[data-state='warning'] .presence__seg--1 {
+  transform: rotate(7deg);
+  transform-origin: 50% 50%;
+}
+
+/* Broken geometry. Still. Never a flashing colour. */
+.presence[data-state='error'] {
+  --p-housing: var(--state-danger);
+  --p-housing-op: 0.8;
+  --p-field-op: 0;
+  --p-nucleus: var(--state-danger);
+  --p-nucleus-op: 0.85;
+  --p-nucleus-scale: 0.7;
+}
+.presence[data-state='error'] .presence__seg--0 {
+  transform: translate(2px, 1.2px) rotate(-4deg);
+  transform-origin: 50% 50%;
+}
+.presence[data-state='error'] .presence__datum {
   stroke: var(--state-danger);
-  opacity: 0.75;
-}
-.presence[data-state='error'] .presence__core {
-  fill: var(--state-danger);
 }
 
-/* ---------------------------------------------------------------------------
- * OFFLINE — dimmed and neutral. Atlas is not there.
- * ------------------------------------------------------------------------ */
-.presence[data-state='offline'] .presence__ring {
-  stroke: var(--atlas-line);
-  opacity: 0.5;
+.presence[data-state='offline'] {
+  --p-housing: var(--line-structural);
+  --p-housing-op: 0.55;
+  --p-field-op: 0;
+  --p-nucleus-op: 0;
+}
+.presence[data-state='offline'] .presence__housing path {
   stroke-dasharray: 2 4;
 }
-.presence[data-state='offline'] .presence__core {
-  fill: var(--atlas-line);
-  opacity: 0.6;
+.presence[data-state='offline'] .presence__datum {
+  stroke: var(--line-structural);
 }
 
-@keyframes presence-breath {
+/* ============================================================ KEYFRAMES == */
+
+@keyframes p-listen {
   0%,
   100% {
-    opacity: 0.45;
+    opacity: 0.55;
+    transform: scale(0.94);
   }
   50% {
     opacity: 0.9;
+    transform: scale(1.02);
   }
 }
 
-@keyframes presence-pulse {
+@keyframes p-reason {
   0%,
   100% {
-    opacity: 0.6;
-    transform: scale(0.92);
+    opacity: 0.75;
+    transform: scale(0.96);
   }
-  50% {
+  35% {
     opacity: 1;
-    transform: scale(1.06);
+    transform: scale(1.05);
+  }
+  70% {
+    opacity: 0.85;
+    transform: scale(0.99);
   }
 }
 
-@keyframes presence-voice {
+@keyframes p-voice {
   0%,
   100% {
     transform: scale(0.86);
   }
   35% {
-    transform: scale(1.16);
+    transform: scale(1.18);
   }
   70% {
     transform: scale(0.98);
   }
 }
 
-@keyframes presence-orbit {
+@keyframes p-flow-in {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 10;
+  }
+}
+
+@keyframes p-flow-out {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* steps() is the point: the index ARRIVES, it does not glide. */
+@keyframes p-index {
   from {
     transform: rotate(0deg);
   }
@@ -219,46 +389,81 @@
   }
 }
 
-@keyframes presence-halo {
-  0% {
-    opacity: 0.55;
-    transform: scale(0.9);
+@keyframes p-core {
+  from {
+    transform: rotate(0deg);
   }
-  100% {
-    opacity: 0;
-    transform: scale(1.45);
+  to {
+    transform: rotate(180deg);
   }
 }
 
-/*
- * Reduced motion: hold each state in a legible static pose rather than
- * flattening them all into the same dot.
+/* ======================================================= REDUCED MOTION ==
+ * Animation stops; the pose remains. Written twice because the OS setting and
+ * the review toggle must both apply.
  */
 @media (prefers-reduced-motion: reduce) {
-  .presence__core,
-  .presence__arc,
-  .presence__halo {
+  .presence,
+  .presence * {
     animation: none !important;
   }
+  .presence[data-state='listening'] .presence__prop line,
+  .presence[data-state='retrieving'] .presence__prop line,
+  .presence[data-state='synthesizing'] .presence__prop line {
+    stroke-dashoffset: 3.2;
+  }
+  .presence[data-state='streaming'] .presence__prop line {
+    stroke-dashoffset: -3.2;
+  }
+  .presence[data-state='thinking'] {
+    --p-nucleus-scale: 1.12;
+  }
+  .presence[data-state='thinking'] .presence__core {
+    transform: rotate(30deg);
+    transform-origin: 50% 50%;
+  }
+  .presence[data-state='retrieving'] {
+    --p-index-rot: 90deg;
+  }
+  .presence[data-state='streaming'] {
+    --p-index-rot: 270deg;
+  }
+  .presence[data-state='working'] {
+    --p-index-rot: 210deg;
+  }
+  .presence[data-state='speaking'] {
+    --p-nucleus-scale: 1.18;
+  }
+}
 
-  .presence[data-state='idle'] .presence__core {
-    opacity: 0.7;
-  }
-  .presence[data-state='awaiting_approval'] .presence__core {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-  /* Keep the arc visible and off-axis so "working" still reads. */
-  .presence[data-state='thinking'] .presence__arc,
-  .presence[data-state='streaming'] .presence__arc {
-    opacity: 1;
-    transform: rotate(-45deg);
-  }
-  .presence[data-state='listening'] .presence__halo {
-    opacity: 0.4;
-    transform: scale(1.22);
-  }
-  .presence[data-state='speaking'] .presence__core {
-    transform: scale(1.16);
-  }
+[data-motion='reduced'] .presence,
+[data-motion='reduced'] .presence * {
+  animation: none !important;
+}
+[data-motion='reduced'] .presence[data-state='listening'] .presence__prop line,
+[data-motion='reduced'] .presence[data-state='retrieving'] .presence__prop line,
+[data-motion='reduced'] .presence[data-state='synthesizing'] .presence__prop line {
+  stroke-dashoffset: 3.2;
+}
+[data-motion='reduced'] .presence[data-state='streaming'] .presence__prop line {
+  stroke-dashoffset: -3.2;
+}
+[data-motion='reduced'] .presence[data-state='thinking'] {
+  --p-nucleus-scale: 1.12;
+}
+[data-motion='reduced'] .presence[data-state='thinking'] .presence__core {
+  transform: rotate(30deg);
+  transform-origin: 50% 50%;
+}
+[data-motion='reduced'] .presence[data-state='retrieving'] {
+  --p-index-rot: 90deg;
+}
+[data-motion='reduced'] .presence[data-state='streaming'] {
+  --p-index-rot: 270deg;
+}
+[data-motion='reduced'] .presence[data-state='working'] {
+  --p-index-rot: 210deg;
+}
+[data-motion='reduced'] .presence[data-state='speaking'] {
+  --p-nucleus-scale: 1.18;
 }

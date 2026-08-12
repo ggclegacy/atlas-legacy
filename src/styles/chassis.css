@@ -1,0 +1,377 @@
+/*
+ * ATLAS CHASSIS — Command Aperture, indexed navigation, shell planes.
+ *
+ * The chassis persists. Navigation exchanges the field's contents; the header,
+ * Presence, Aperture, and navigation never unmount or move.
+ */
+
+/* ======================================================= COMMAND APERTURE ==
+ * A cut into the plane with an instrument seated in it. Not a text box.
+ */
+.ap {
+  --ap-illum: transparent;
+  --ap-illum-pos: 50%;
+  position: relative;
+  background-color: var(--env-structure);
+  border-radius: var(--radius-plane);
+  overflow: hidden;
+  transition: transform var(--t-focus) var(--ease-atlas);
+}
+
+/* Phone: the Aperture is pinned above the navigation and runs edge to edge. */
+.ap--pinned {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  z-index: 20;
+  border-radius: 0;
+  border-block-start: 1px solid var(--line-structural);
+}
+
+@media (min-width: 768px) {
+  .ap--pinned {
+    position: static;
+    border-radius: var(--radius-plane);
+    border-block-start: 0;
+  }
+}
+
+/* Scope band — thin, structural. Grows later to hold attachments and tools. */
+.ap__scope {
+  display: flex;
+  align-items: center;
+  gap: var(--inset-nest);
+  padding: 6px 12px 4px;
+  border-block-end: 1px solid var(--line-soft);
+}
+
+/* No project scope: the band becomes a structural edge rather than repeating
+   what the chassis header already says. */
+.ap__scope[data-collapsed='true'] {
+  padding-block: 5px;
+}
+
+.ap__scope-text {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-authority);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ap__scope-ctx {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The recessed channel. Dark lip above, lit floor below. */
+.ap__housing {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--inset-nest);
+  padding: 8px;
+  background-color: var(--env-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--line-recessed),
+    inset 0 -1px 0 0 var(--line-raised);
+  transition: transform var(--t-focus) var(--ease-atlas);
+}
+
+/* Future capability seam: attachments, tools, delegation. Occupies no space. */
+.ap__augment {
+  display: none;
+}
+
+.ap__intake {
+  flex: 1;
+  min-inline-size: 0;
+  font: inherit;
+  /* 16px minimum or iOS Safari zooms the viewport on focus. */
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--text-primary);
+  background: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+  padding: 10px 4px;
+  max-block-size: 128px;
+}
+
+.ap__intake::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* 44px target around a 24px instrument. */
+.ap__actuator {
+  flex: none;
+  inline-size: var(--tap-min);
+  block-size: var(--tap-min);
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-fillet);
+  cursor: pointer;
+  transition: opacity var(--t-acknowledge) var(--ease-atlas);
+}
+
+.ap__actuator:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Illumination edge — carries state. Its colour comes FROM the actuator. */
+.ap__illum {
+  block-size: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--ap-illum) var(--ap-illum-pos),
+    transparent 100%
+  );
+  transition: background-image var(--t-focus) var(--ease-atlas);
+}
+
+.ap[data-state='focused'],
+.ap[data-state='typing'] {
+  --ap-illum: var(--gold-illuminated);
+}
+.ap[data-state='focused'] .ap__housing,
+.ap[data-state='typing'] .ap__housing {
+  transform: translateY(-1px);
+}
+
+.ap[data-state='context'] {
+  --ap-illum: var(--gold-structural);
+}
+.ap[data-state='submitting'] {
+  --ap-illum: var(--gold-authority);
+}
+
+/* Energy enters from the actuator end, not from the middle. */
+.ap[data-state='reasoning'] {
+  --ap-illum: var(--energy-reason);
+  --ap-illum-pos: 88%;
+}
+
+.ap[data-state='streaming'] {
+  --ap-illum: var(--energy-output);
+  --ap-illum-pos: 40%;
+}
+
+.ap[data-state='awaiting_approval'] {
+  --ap-illum: var(--gold-illuminated);
+}
+.ap[data-state='awaiting_approval'] .ap__scope {
+  border-block-end-color: var(--gold-structural);
+}
+
+.ap[data-state='error'] {
+  --ap-illum: var(--state-danger);
+}
+.ap[data-state='error'] .ap__housing {
+  transform: translateX(2px);
+}
+
+/* ==================================================== INDEXED NAVIGATION ==
+ * Familiar placement, engineered behaviour. The active mode occupies a
+ * measurable position marked by a gold datum, and the segment recesses.
+ */
+.nav {
+  display: flex;
+  background-color: var(--env-structure);
+  border-block-start: 1px solid var(--line-structural);
+}
+
+.nav--bottom {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 30;
+  padding-block-end: env(safe-area-inset-bottom);
+}
+
+.nav__item {
+  position: relative;
+  flex: 1;
+  min-block-size: var(--nav-height);
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  padding: 6px 4px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  transition:
+    color var(--t-focus) var(--ease-atlas),
+    background-color var(--t-focus) var(--ease-atlas);
+}
+
+.nav__item:hover {
+  color: var(--text-secondary);
+}
+
+/* Active: recessed into the plane, marked by a datum. Not a tinted icon. */
+.nav__item[aria-current='page'] {
+  color: var(--gold-authority);
+  background-color: var(--env-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--line-recessed),
+    inset 0 -1px 0 0 var(--line-raised);
+}
+
+.nav__item::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inline-size: 1px;
+  block-size: 6px;
+  background-color: transparent;
+  transition: background-color var(--t-shift) var(--ease-atlas);
+}
+.nav__item[aria-current='page']::before {
+  background-color: var(--gold-illuminated);
+}
+
+/* ---- Desktop rail: same indexing, vertical ---- */
+.rail {
+  display: none;
+  flex-direction: column;
+  flex: none;
+  inline-size: var(--rail-width);
+  background-color: var(--env-structure);
+  border-inline-end: 1px solid var(--line-structural);
+  padding-block-start: env(safe-area-inset-top);
+}
+
+@media (min-width: 768px) {
+  .rail {
+    display: flex;
+  }
+  .nav--bottom {
+    display: none;
+  }
+}
+
+.rail__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  block-size: var(--header-height);
+  padding-inline: 16px;
+  border-block-end: 1px solid var(--line-structural);
+}
+
+.rail__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: var(--tap-min);
+  padding-inline: 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  transition:
+    color var(--t-focus) var(--ease-atlas),
+    background-color var(--t-focus) var(--ease-atlas);
+}
+
+.rail__item:hover {
+  color: var(--text-primary);
+}
+
+.rail__item[aria-current='page'] {
+  color: var(--text-primary);
+  background-color: var(--env-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--line-recessed),
+    inset 0 -1px 0 0 var(--line-raised);
+}
+
+.rail__item::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inline-size: 1px;
+  block-size: 0;
+  background-color: var(--gold-illuminated);
+  transition: block-size var(--t-shift) var(--ease-atlas);
+}
+.rail__item[aria-current='page']::before {
+  block-size: 18px;
+}
+
+/* ============================================================== HEADER ==
+ * A structural plane. Opaque: content reading through a translucent bar looks
+ * like a rendering fault, not a design choice (measured in M1 on WebKit).
+ */
+.chassis-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  background-color: var(--env-structure);
+  border-block-end: 1px solid var(--line-structural);
+  padding-block-start: env(safe-area-inset-top);
+}
+
+.chassis-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  block-size: var(--header-height);
+  padding-inline: 16px;
+}
+
+/* Scope is always visible: knowing which context Atlas is in is the difference
+   between an answer and a leak. */
+.scope-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.scope-chip__org {
+  color: var(--gold-authority);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================================================== SHIFT — mode change ==
+ * The field's contents exchange. The chassis does not move.
+ */
+.field-shift {
+  animation: shift-in var(--t-shift) var(--ease-atlas);
+}
+
+@keyframes shift-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-shift {
+    animation: none;
+  }
+}
+[data-motion='reduced'] .field-shift {
+  animation: none;
+}

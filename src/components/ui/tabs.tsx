@@ -26,12 +26,12 @@ export function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsP
     <TabsPrimitive.Trigger
       className={cn(
         'relative inline-flex h-11 items-center px-3 text-sm text-secondary',
-        'transition-colors duration-(--motion-fast) ease-(--ease-atlas)',
+        'transition-colors duration-(--t-acknowledge) ease-(--ease-atlas)',
         'hover:text-primary',
         'data-[state=active]:text-primary',
         // Gold underline, drawn without shifting layout.
         'after:absolute after:inset-x-0 after:-bottom-px after:h-px after:bg-transparent',
-        'data-[state=active]:after:bg-gold-500',
+        'data-[state=active]:after:bg-gold',
         'disabled:pointer-events-none disabled:opacity-40',
         className,
       )}

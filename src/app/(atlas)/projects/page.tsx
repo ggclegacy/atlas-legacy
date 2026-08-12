@@ -1,53 +1,63 @@
 import { DemoBanner } from '@/components/atlas/demo';
 import { DEMO_PROJECTS } from '@/components/atlas/demo-data';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
 
 export const metadata = { title: 'Projects' };
 
-/** Projects, grouped by organization — the boundary that must never blur. */
+/**
+ * PROJECTS — operating contexts, not folders.
+ *
+ * Organizations become interrupted hairlines with the org name in the gap.
+ * Projects are rows inside one continuous recessed field. Active status is
+ * marked structurally with a gold datum rather than a badge.
+ */
 export default function ProjectsPage() {
   const organizations = [...new Set(DEMO_PROJECTS.map((p) => p.org))];
 
   return (
-    <div className="mx-auto max-w-(--content-max) px-4 pt-6 pb-8">
-      <h1 className="font-display text-3xl text-primary">Projects</h1>
-      <p className="mt-2 text-sm text-secondary">
+    <div className="mx-auto max-w-(--content-max) px-4 pt-7">
+      <h1 className="text-[32px] leading-[1.12] tracking-[-0.02em] text-primary">Projects</h1>
+      <p className="mt-2.5 text-sm leading-relaxed text-secondary">
         Every project belongs to exactly one organization. Atlas never mixes their context.
       </p>
 
-      <DemoBanner className="mt-5" />
+      <DemoBanner className="mt-6" />
 
-      <div className="mt-5 space-y-4">
-        {organizations.map((org) => (
-          <Card key={org}>
-            <CardHeader title={org} />
-            <CardBody className="space-y-1">
+      <section className="well well--bleed mt-6 pt-4 pb-6">
+        {organizations.map((org, i) => (
+          <div key={org} className={i > 0 ? 'mt-7' : undefined}>
+            <div className="rule">
+              <span className="rule__label">{org}</span>
+            </div>
+            <ul className="mt-3">
               {DEMO_PROJECTS.filter((p) => p.org === org).map((project) => (
-                <div key={project.id} className="flex items-center justify-between gap-3 py-1.5">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm text-primary">{project.name}</p>
-                    <p className="text-xs text-tertiary" data-numeric>
-                      {project.openGoals} open goals
-                    </p>
-                  </div>
-                  <span
-                    className={
-                      project.status === 'active'
-                        ? 'shrink-0 text-xs text-gold-400'
-                        : 'shrink-0 text-xs text-tertiary'
-                    }
-                  >
-                    {project.status}
+                <li key={project.id} className="entry">
+                  <span className="flex min-w-0 items-baseline gap-2.5">
+                    {/* Active state is structural: a datum, not a pill. */}
+                    <span
+                      aria-hidden
+                      className={
+                        project.status === 'active'
+                          ? 'datum self-center'
+                          : 'h-1.5 w-px shrink-0 self-center bg-line-raised'
+                      }
+                    />
+                    <span className="min-w-0">
+                      <span className="entry__title block truncate">{project.name}</span>
+                      <span className="machine" data-numeric>
+                        {project.openGoals} open goals
+                      </span>
+                    </span>
                   </span>
-                </div>
+                  <span className="machine shrink-0">{project.status}</span>
+                </li>
               ))}
-            </CardBody>
-          </Card>
+            </ul>
+          </div>
         ))}
-      </div>
+      </section>
 
-      <p className="mt-5 text-xs text-tertiary">
-        Project creation, goals, current state, and “where did we leave off” arrive in M8.
+      <p className="machine mt-6 pb-4">
+        project creation · goals · current state · “where did we leave off” — M8
       </p>
     </div>
   );

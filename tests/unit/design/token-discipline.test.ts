@@ -25,6 +25,8 @@ const ALLOWLIST = new Map<string, string>([
   ['src/styles/tokens.css', 'the token definitions themselves'],
   ['src/app/manifest.ts', 'consumed by the OS, which cannot read CSS variables'],
   ['src/app/layout.tsx', 'themeColor meta tag, which cannot read CSS variables'],
+
+  ['src/styles/lab.css', 'lab-only review overrides for grain and well depth'],
 ]);
 
 const COLOUR_PATTERN = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/g;
@@ -63,7 +65,7 @@ describe('token discipline', () => {
 
   it('allowlisted literals still match the tokens they duplicate', () => {
     const tokens = readTokens();
-    const voidHex = hexToken(tokens, '--atlas-void').toLowerCase();
+    const voidHex = hexToken(tokens, '--env-void').toLowerCase();
 
     const manifest = readFileSync(resolve(ROOT, 'src/app/manifest.ts'), 'utf8');
     const layout = readFileSync(resolve(ROOT, 'src/app/layout.tsx'), 'utf8');
@@ -79,8 +81,8 @@ describe('token discipline', () => {
     const tokens = readTokens();
     const script = readFileSync(resolve(ROOT, 'scripts/generate-icons.mjs'), 'utf8').toUpperCase();
 
-    expect(script).toContain(hexToken(tokens, '--atlas-void').toUpperCase());
-    expect(script).toContain(hexToken(tokens, '--gold-600').toUpperCase());
-    expect(script).toContain(hexToken(tokens, '--gold-500').toUpperCase());
+    expect(script).toContain(hexToken(tokens, '--env-void').toUpperCase());
+    expect(script).toContain(hexToken(tokens, '--gold-structural').toUpperCase());
+    expect(script).toContain(hexToken(tokens, '--gold-illuminated').toUpperCase());
   });
 });

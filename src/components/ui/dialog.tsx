@@ -35,15 +35,13 @@ export function DialogContent({
         className={cn(
           'fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-md',
           '-translate-x-1/2 -translate-y-1/2',
-          'rounded-lg border border-line bg-raised p-5',
+          'transient rounded-lg border border-line p-5',
           'data-[state=closed]:animate-dialog-out data-[state=open]:animate-dialog-in',
           className,
         )}
         {...props}
       >
-        <DialogPrimitive.Title className="font-display text-xl text-primary">
-          {title}
-        </DialogPrimitive.Title>
+        <DialogPrimitive.Title className="text-xl text-primary">{title}</DialogPrimitive.Title>
         {description ? (
           <DialogPrimitive.Description className="mt-1.5 text-sm text-secondary">
             {description}
