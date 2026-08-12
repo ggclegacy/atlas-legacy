@@ -59,3 +59,8 @@ production build. All five must pass. A passing `npm run dev` is not verificatio
 - **`server-only` is stubbed in Vitest** (see `vitest.config.mts`) because it
   throws outside React's `react-server` condition. The production guard is
   unaffected.
+- **`tsc` alone is not enough.** Next.js generates route types (`LayoutProps`,
+  `PageProps`, …) into `.next/types`. On a clean checkout they do not exist, so
+  `tsc --noEmit` fails with `Cannot find name 'LayoutProps'`. The `typecheck`
+  script therefore runs `next typegen` first. This passed locally and failed in
+  CI until it was fixed — always trust CI over a warm local `.next`.
