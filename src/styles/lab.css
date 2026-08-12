@@ -1,0 +1,274 @@
+/*
+ * Design-lab chrome and review overrides.
+ *
+ * The lab now consumes the PRODUCTION tokens — geometry B, violet A, true-black
+ * wells and low grain were selected in VP1 and are locked in tokens.css. What
+ * remains here are the review switches that stay useful after selection.
+ *
+ * Deliberately plain so the furniture never flatters what is being judged.
+ */
+
+.lab {
+  min-block-size: 100dvh;
+  padding-block-end: 96px;
+}
+
+/* ---- review overrides, scoped to the lab only ---- */
+[data-lab][data-grain='off'] {
+  --grain: 0;
+}
+[data-lab][data-grain='max'] {
+  --grain: 0.015;
+}
+[data-lab][data-well='near'] {
+  --env-well: #030305;
+}
+
+/*
+ * PLAIN MODE — the honesty gate. Strips grain, bevels, and energy so the
+ * hierarchy has to stand on its own. If the screen falls apart here, the
+ * effects were concealing weak structure.
+ */
+[data-lab][data-plain='true'] {
+  --grain: 0;
+  --energy-rest: transparent;
+  --energy-engaged: transparent;
+  --energy-reason: transparent;
+  --energy-output: transparent;
+  --line-raised: transparent;
+  --line-recessed: transparent;
+}
+
+.lab__bar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 50;
+  background-color: var(--env-structure);
+  border-block-end: 1px solid var(--line-structural);
+  padding: 10px 16px;
+  padding-block-start: calc(10px + env(safe-area-inset-top));
+}
+
+.lab__bar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+}
+
+.lab__group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lab__group-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-inline-end: 2px;
+}
+
+/* Gold edge and gold text, never a gold fill — the lab obeys the law it tests. */
+.lab__opt {
+  min-block-size: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background-color: var(--env-surface);
+  border: 1px solid var(--line-structural);
+  border-radius: var(--radius-fillet);
+  cursor: pointer;
+}
+
+.lab__opt[aria-pressed='true'] {
+  color: var(--gold-authority);
+  background-color: var(--env-well);
+  border-color: var(--gold-structural);
+}
+
+.lab__section {
+  padding: 28px 16px 0;
+  max-inline-size: 1180px;
+  margin-inline: auto;
+}
+
+.lab__note {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-tertiary);
+  max-inline-size: 62ch;
+  margin-block: 10px 16px;
+}
+
+.lab__grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+}
+
+.lab__cell {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  text-align: center;
+}
+
+.lab__cell-name {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.lab__cell-meaning {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-tertiary);
+}
+
+.lab__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+}
+
+.lab__swatch {
+  inline-size: 100%;
+  block-size: 48px;
+  border-radius: var(--radius-fillet);
+}
+
+/* Deliberate anti-pattern demo. Everything at once, on purpose. */
+.lab__bad {
+  border: 1px solid var(--state-danger);
+  border-radius: 14px;
+  padding: 12px;
+}
+.lab__bad-row {
+  border-block-end: 1px dashed var(--gold-illuminated);
+  border-inline-start: 2px solid var(--gold-illuminated);
+  border-start-start-radius: 12px;
+  border-end-end-radius: 2px;
+  padding: 8px;
+  margin-block-end: 6px;
+  background: linear-gradient(90deg, var(--env-surface), var(--env-active));
+}
+
+/* ------------------------------------------------------- MOTION GRAMMAR -- */
+.motion-demo {
+  display: grid;
+  place-items: center;
+  min-block-size: 76px;
+  background-color: var(--env-well);
+  box-shadow:
+    inset 0 1px 0 0 var(--line-recessed),
+    inset 0 -1px 0 0 var(--line-raised);
+  overflow: hidden;
+}
+
+.motion-token {
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--radius-fillet);
+  background-color: var(--env-surface);
+  box-shadow: inset 0 1px 0 0 var(--line-raised);
+}
+
+.motion-demo[data-cat='acknowledge'][data-run='true'] .motion-token {
+  animation: m-acknowledge var(--t-acknowledge) var(--ease-atlas);
+}
+@keyframes m-acknowledge {
+  50% {
+    background-color: var(--gold-structural);
+  }
+}
+
+.motion-demo[data-cat='focus'][data-run='true'] .motion-token {
+  animation: m-focus var(--t-focus) var(--ease-atlas);
+}
+@keyframes m-focus {
+  to {
+    box-shadow:
+      inset 0 1px 0 0 var(--gold-illuminated),
+      0 0 0 1px var(--gold-structural);
+  }
+}
+
+.motion-demo[data-cat='shift'][data-run='true'] .motion-token {
+  animation: m-shift var(--t-shift) var(--ease-atlas);
+}
+@keyframes m-shift {
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.motion-demo[data-cat='transfer'][data-run='true'] .motion-token {
+  animation: m-transfer var(--t-transfer) var(--ease-atlas);
+}
+@keyframes m-transfer {
+  0% {
+    transform: translateX(-64px);
+    background-color: var(--energy-reason);
+  }
+  100% {
+    transform: translateX(64px);
+    background-color: var(--energy-output);
+  }
+}
+
+.motion-demo[data-cat='expand'][data-run='true'] .motion-token {
+  animation: m-expand var(--t-expand) var(--ease-atlas);
+  transform-origin: left center;
+}
+@keyframes m-expand {
+  from {
+    transform: scaleX(0.2);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.motion-demo[data-cat='resolve'][data-run='true'] .motion-token {
+  animation: m-resolve var(--t-resolve) var(--ease-settle);
+}
+@keyframes m-resolve {
+  from {
+    background-color: var(--energy-output);
+    transform: scale(1.14);
+  }
+  to {
+    background-color: var(--env-surface);
+    transform: scale(1);
+  }
+}
+
+.motion-demo[data-cat='disturb'][data-run='true'] .motion-token {
+  animation: m-disturb var(--t-disturb) var(--ease-atlas);
+}
+@keyframes m-disturb {
+  30% {
+    transform: translateX(-3px);
+  }
+  70% {
+    transform: translateX(3px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-demo .motion-token {
+    animation: none !important;
+  }
+}
+[data-motion='reduced'] .motion-demo .motion-token {
+  animation: none !important;
+}

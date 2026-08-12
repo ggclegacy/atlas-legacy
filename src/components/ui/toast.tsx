@@ -58,7 +58,7 @@ export function AtlasToastProvider({ children }: { children: ReactNode }) {
               if (!open) setItems((current) => current.filter((t) => t.id !== item.id));
             }}
             className={cn(
-              'rounded-md border bg-raised p-3.5 shadow-lg shadow-black/40',
+              'transient rounded-md border p-3.5 shadow-lg shadow-black/40',
               'data-[state=closed]:animate-toast-out data-[state=open]:animate-toast-in',
               'data-[swipe=end]:animate-toast-out',
               TONE_BORDER[item.tone],

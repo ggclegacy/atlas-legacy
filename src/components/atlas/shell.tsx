@@ -1,36 +1,55 @@
-import type { ReactNode } from 'react';
+'use client';
 
-import { cn } from '@/components/ui/cn';
+import { usePathname } from 'next/navigation';
+import type { ReactNode } from 'react';
 
 import { DEMO_SCOPE } from './demo-data';
 import { BottomNav, SideRail } from './nav';
 import { Presence } from './presence';
+import { useAtlasPresence } from './presence-context';
 
 /**
- * The Atlas shell.
+ * THE ATLAS CHASSIS.
  *
- * Phone   — single column, fixed bottom navigation, safe-area aware.
- * Tablet  — the side rail replaces the bottom bar.
- * Desktop — rail + primary workspace + contextual right region.
+ * Header, Presence, and navigation are rendered once and never unmount. Moving
+ * between modes exchanges the field's contents (SHIFT) while the machine around
+ * them stays exactly where it is — which is what makes Atlas read as one system
+ * rather than four screens.
  *
- * The right region is structural only in M1. It becomes the Context Panel
- * (what Atlas retrieved for this turn) at M5.
+ * Phone   — single column, structural bottom plane, Aperture pinned above it.
+ * Tablet  — the rail replaces the bottom plane.
+ * Desktop — rail + workspace + a deeper contextual cut (functional at M5).
  */
 export function AtlasShell({ children }: { children: ReactNode }) {
+  const { state } = useAtlasPresence();
+  const pathname = usePathname();
+
   return (
     <div className="flex min-h-dvh">
-      <SideRail />
+      <SideRail presence={<Presence state={state} size="sm" decorative />} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <ScopeHeader />
+        <header className="chassis-header">
+          <div className="chassis-header__row">
+            <span className="scope-chip">
+              <span className="datum" aria-hidden />
+              <span className="scope-chip__org">{DEMO_SCOPE.organization}</span>
+              {DEMO_SCOPE.project ? <span>· {DEMO_SCOPE.project}</span> : null}
+            </span>
+
+            {/* The instrument is always visible, whatever mode you are in. */}
+            <Presence state={state} size="sm" />
+          </div>
+        </header>
 
         <main
           id="main"
-          className={cn(
-            'flex-1',
-            // Clear the fixed bottom navigation on phones.
-            'pb-[calc(var(--nav-height)+env(safe-area-inset-bottom))] md:pb-0',
-          )}
+          /*
+           * `key` on the pathname is what makes SHIFT a content exchange rather
+           * than a page transition: the field re-enters, the chassis does not.
+           */
+          key={pathname}
+          className="field-shift flex-1 pb-[calc(var(--nav-height)+var(--aperture-height)+env(safe-area-inset-bottom))] md:pb-8"
         >
           {children}
         </main>
@@ -43,56 +62,24 @@ export function AtlasShell({ children }: { children: ReactNode }) {
 }
 
 /**
- * Scope is always visible. Knowing which organization and project Atlas is
- * operating in is the difference between an answer and a leak, so it is never
- * hidden behind a menu.
+ * Desktop contextual region — a deeper cut, not a lit panel.
+ * Becomes the Context Panel (what Atlas retrieved) at M5.
  */
-function ScopeHeader() {
-  return (
-    <header
-      className={cn(
-        'sticky top-0 z-20 border-b border-line bg-void',
-        'pt-[env(safe-area-inset-top)]',
-      )}
-    >
-      <div className="flex h-14 items-center justify-between gap-3 px-4">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Presence state="idle" size="sm" decorative className="md:hidden" />
-          <span className="font-display text-lg leading-none text-primary md:hidden">Atlas</span>
-
-          <span
-            className={cn(
-              'truncate rounded-sm border border-line px-2 py-1 text-xs text-secondary',
-              'max-md:ml-1',
-            )}
-          >
-            <span className="text-gold-400">{DEMO_SCOPE.organization}</span>
-            {DEMO_SCOPE.project ? ` · ${DEMO_SCOPE.project}` : ''}
-          </span>
-        </div>
-
-        <Presence state="idle" size="sm" decorative className="max-md:hidden" />
-      </div>
-    </header>
-  );
-}
-
 function ContextRegion() {
   return (
     <aside
       aria-label="Context"
-      className="hidden shrink-0 border-l border-line xl:block xl:w-(--context-width)"
+      className="well hidden shrink-0 border-l border-line xl:block xl:w-(--context-width)"
     >
-      <div className="sticky top-0 p-4">
-        <h2 className="flex items-center gap-2.5 text-xs tracking-[0.16em] text-secondary uppercase">
-          <span aria-hidden className="h-3 w-px bg-gold-600" />
-          Context
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-tertiary">
-          When Atlas answers, this panel will show exactly what it used — the memories, decisions,
-          and project state that fed the response.
+      <div className="sticky top-0 p-5">
+        <div className="rule">
+          <span className="rule__label">Context</span>
+        </div>
+        <p className="mt-4 text-[13px] leading-relaxed text-tertiary">
+          When Atlas answers, this region shows exactly what it used — the memories, decisions, and
+          project state that fed the response.
         </p>
-        <p className="mt-3 text-xs text-tertiary">Becomes functional in M5.</p>
+        <p className="machine mt-4">functional · M5</p>
       </div>
     </aside>
   );

@@ -5,10 +5,10 @@ import { cn } from './cn';
 const FIELD_BASE = cn(
   // border-line-strong, not border-line: a form control's boundary must meet
   // the 3:1 non-text contrast requirement. Decorative edges stay on border-line.
-  'w-full rounded-md bg-raised text-primary border border-line-strong',
+  'w-full rounded-[--radius-fillet] bg-surface text-primary border border-line-interactive',
   'placeholder:text-tertiary',
-  'transition-colors duration-(--motion-fast) ease-(--ease-atlas)',
-  'hover:border-gold-700',
+  'transition-colors duration-(--t-acknowledge) ease-(--ease-atlas)',
+  'hover:border-gold-structural',
   'disabled:opacity-40 disabled:pointer-events-none',
   // 16px minimum prevents iOS Safari from zooming the viewport on focus.
   'text-base',

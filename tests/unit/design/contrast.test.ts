@@ -3,38 +3,44 @@ import { describe, expect, it } from 'vitest';
 import { contrast, hexToken, hueDistance, readTokens } from './tokens';
 
 /**
- * Automated contrast checks for the Atlas palette.
+ * Automated contrast checks for the Atlas Precision Core palette.
  *
- * Atlas is a dark, restrained interface, which is exactly the kind of design
- * that drifts into unreadable. These thresholds are the floor. If a token
- * changes and a test here fails, the token is wrong — not the test.
+ * Atlas is a dark, restrained interface — exactly the kind that drifts into
+ * unreadable. These thresholds are the floor. If a token changes and a test
+ * here fails, the token is wrong, not the test.
  *
- * WCAG 2.1: 4.5 = AA normal text, 3.0 = AA large text / non-text UI, 7.0 = AAA.
+ * WCAG 2.1: 4.5 = AA normal text · 3.0 = AA large / non-text UI · 7.0 = AAA.
  */
 
 const tokens = readTokens();
-const VOID = hexToken(tokens, '--atlas-void');
-const SURFACE = hexToken(tokens, '--atlas-surface');
-const RAISED = hexToken(tokens, '--atlas-raised');
+const VOID = hexToken(tokens, '--env-void');
+const WELL = hexToken(tokens, '--env-well');
+const STRUCTURE = hexToken(tokens, '--env-structure');
+const SURFACE = hexToken(tokens, '--env-surface');
 
-function ratio(tokenName: string, background = VOID): number {
-  return contrast(hexToken(tokens, tokenName), background);
+function ratio(token: string, background = VOID): number {
+  return contrast(hexToken(tokens, token), background);
 }
 
-describe('text on the three Atlas surfaces', () => {
-  const surfaces: ReadonlyArray<readonly [string, string]> = [
-    ['void', VOID],
-    ['surface', SURFACE],
-    ['raised', RAISED],
-  ];
+const SURFACES: ReadonlyArray<readonly [string, string]> = [
+  ['void', VOID],
+  ['well', WELL],
+  ['structure', STRUCTURE],
+  ['surface', SURFACE],
+];
 
-  for (const [name, background] of surfaces) {
+describe('text on every Atlas surface', () => {
+  for (const [name, background] of SURFACES) {
     it(`primary text is AAA on ${name}`, () => {
       expect(ratio('--text-primary', background)).toBeGreaterThanOrEqual(7);
     });
 
     it(`secondary text is AA on ${name}`, () => {
       expect(ratio('--text-secondary', background)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it(`machine text is AA on ${name}`, () => {
+      expect(ratio('--text-machine', background)).toBeGreaterThanOrEqual(4.5);
     });
   }
 });
@@ -44,46 +50,59 @@ describe('tertiary text is large-text only', () => {
     expect(ratio('--text-tertiary')).toBeGreaterThanOrEqual(3);
   });
 
-  it('does NOT meet AA for normal text — this is intentional and documented', () => {
-    // Guards against someone "fixing" the contrast test by lightening the token
-    // without also revisiting where tertiary text is allowed to be used.
+  it('does NOT meet AA for normal text — intentional and documented', () => {
+    // Guards against "fixing" the test by lightening the token without also
+    // revisiting where tertiary text is allowed to be used.
     expect(ratio('--text-tertiary')).toBeLessThan(4.5);
   });
 });
 
-describe('gold scale', () => {
-  it.each(['--gold-300', '--gold-400', '--gold-500', '--gold-600'])(
+describe('GOLD ON EDGES', () => {
+  it.each(['--gold-illuminated', '--gold-authority', '--gold-specular'])(
     '%s is readable as text on void',
     (token) => {
       expect(ratio(token)).toBeGreaterThanOrEqual(4.5);
     },
   );
 
-  it('gold-700 is non-text only', () => {
-    // Reserved for borders and fills. Asserting the ceiling keeps it honest.
-    expect(ratio('--gold-700')).toBeLessThan(4.5);
+  it('gold-structural is non-text only', () => {
+    expect(ratio('--gold-structural')).toBeLessThan(4.5);
   });
 
   it('canonical Atlas gold is comfortably readable', () => {
-    expect(ratio('--gold-500')).toBeGreaterThanOrEqual(6.5);
+    expect(ratio('--gold-illuminated')).toBeGreaterThanOrEqual(6.5);
   });
 });
 
-describe('intelligence blue', () => {
-  it.each(['--intel-300', '--intel-400', '--intel-500'])(
-    '%s is readable as text on void',
-    (token) => {
-      expect(ratio(token)).toBeGreaterThanOrEqual(4.5);
-    },
-  );
-
-  it('intel-600 is non-text only', () => {
-    expect(ratio('--intel-600')).toBeLessThan(4.5);
+describe('VIOLET IN VOLUMES', () => {
+  /**
+   * Energy violet is volumetric and non-informational, so it carries no
+   * contrast requirement — but it must never become readable enough to tempt
+   * anyone into using it as text. Signal violet is the informational role.
+   */
+  it('signal violet clears 3:1 on every surface', () => {
+    for (const [name, background] of SURFACES) {
+      expect(
+        contrast(hexToken(tokens, '--signal-violet'), background),
+        `signal violet on ${name}`,
+      ).toBeGreaterThanOrEqual(3);
+    }
   });
 
-  it('the focus ring meets non-text contrast on every surface', () => {
-    for (const background of [VOID, SURFACE, RAISED]) {
-      expect(contrast(hexToken(tokens, '--intel-400'), background)).toBeGreaterThanOrEqual(3);
+  it('signal violet stays saturated rather than drifting to pastel', () => {
+    expect(contrast(hexToken(tokens, '--signal-violet'), WELL)).toBeLessThan(7);
+  });
+
+  it('resting energy is genuinely low — present, not neon', () => {
+    expect(ratio('--energy-rest')).toBeLessThan(2);
+  });
+
+  it('the energy ladder rises monotonically', () => {
+    const steps = ['--energy-rest', '--energy-engaged', '--energy-reason', '--energy-output'].map(
+      (t) => ratio(t),
+    );
+    for (let i = 1; i < steps.length; i += 1) {
+      expect(steps[i]!).toBeGreaterThan(steps[i - 1]!);
     }
   });
 });
@@ -98,10 +117,9 @@ describe('semantic colours', () => {
 
   it('warning is separated from Atlas gold by hue, not luminance', () => {
     // Contrast ratio cannot express this: an amber warning and Atlas gold have
-    // near-identical luminance yet must never be confused. Hue distance is the
-    // metric that matches the design intent.
+    // near-identical luminance yet must never be confused.
     expect(
-      hueDistance(hexToken(tokens, '--state-warning'), hexToken(tokens, '--gold-500')),
+      hueDistance(hexToken(tokens, '--state-warning'), hexToken(tokens, '--gold-illuminated')),
     ).toBeGreaterThanOrEqual(20);
   });
 
@@ -117,15 +135,23 @@ describe('semantic colours', () => {
 });
 
 describe('interactive boundaries', () => {
-  it('form-control borders meet the 3:1 non-text requirement (WCAG 1.4.11)', () => {
-    // The decorative hairline is nowhere near 3:1, which is why inputs use a
-    // dedicated stronger token. Asserting it here stops that regressing.
-    expect(contrast(hexToken(tokens, '--line-strong'), RAISED)).toBeGreaterThanOrEqual(3);
+  it('form-control borders meet 3:1 (WCAG 1.4.11)', () => {
+    expect(contrast(hexToken(tokens, '--line-interactive'), SURFACE)).toBeGreaterThanOrEqual(3);
   });
 
   it('the decorative hairline is deliberately quieter than the interactive one', () => {
-    expect(contrast(hexToken(tokens, '--atlas-line'), SURFACE)).toBeLessThan(
-      contrast(hexToken(tokens, '--line-strong'), SURFACE),
+    expect(contrast(hexToken(tokens, '--line-structural'), SURFACE)).toBeLessThan(
+      contrast(hexToken(tokens, '--line-interactive'), SURFACE),
     );
+  });
+});
+
+describe('recession', () => {
+  it('the well is true black — content is cut in, not raised on', () => {
+    expect(hexToken(tokens, '--env-well')).toBe('#000000');
+  });
+
+  it('the lit inner edge is brighter than the dark one', () => {
+    expect(ratio('--line-raised')).toBeGreaterThan(ratio('--line-recessed'));
   });
 });

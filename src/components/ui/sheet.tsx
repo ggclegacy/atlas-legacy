@@ -34,7 +34,7 @@ export function SheetContent({
       />
       <SheetPrimitive.Content
         className={cn(
-          'fixed inset-x-0 bottom-0 z-50 rounded-t-lg border-t border-line bg-raised',
+          'transient fixed inset-x-0 bottom-0 z-50 rounded-t-lg border-t border-line',
           'max-h-[85dvh] overflow-y-auto',
           // Clear the iOS home indicator.
           'pb-[max(1rem,env(safe-area-inset-bottom))]',
@@ -48,9 +48,7 @@ export function SheetContent({
           <span className="h-1 w-9 rounded-full bg-line" />
         </div>
         <div className="px-4 pt-2">
-          <SheetPrimitive.Title className="font-display text-xl text-primary">
-            {title}
-          </SheetPrimitive.Title>
+          <SheetPrimitive.Title className="text-xl text-primary">{title}</SheetPrimitive.Title>
           {description ? (
             <SheetPrimitive.Description className="mt-1 text-sm text-secondary">
               {description}

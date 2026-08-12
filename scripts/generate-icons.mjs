@@ -16,9 +16,9 @@ import sharp from 'sharp';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 // Kept in sync with src/styles/tokens.css by the token drift test.
-const VOID = '#050506';
-const RING = '#9C7326';
-const CORE = '#C4912F';
+const VOID = '#050506'; // --env-void
+const RING = '#6E501A'; // --gold-structural
+const CORE = '#C4912F'; // --gold-illuminated
 
 /**
  * @param {number} ringRadius fraction of half-size (0–1)
